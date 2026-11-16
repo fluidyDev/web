@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Cours ISIMA · Fluidy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@500;600&family=Poppins:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Mise en page : un écran par message, façon formulaire pas à pas. Trois panneaux redimensionnables sans fond (journaux, question, ressources) sous un en-tête épuré ; aucune carte blanche, seuls les champs de saisie sont blancs. */
+:root{
+  --ink:#001828; --ink-60:rgba(0,24,40,.62); --ink-45:rgba(0,24,40,.45);
+  --brand:#014e7e; --slate:#1d4761; --accent:#0080ff; --accent-soft:#90caf2;
+  --page:#fbfcfd; --card:rgba(255,255,255,.9); --white:#ffffff;
+  --line:rgba(159,162,164,.3); --line-strong:rgba(159,162,164,.5); --wash:rgba(1,78,126,.07);
+  --ok:#146b3a; --ok-bg:#e6f5ec; --warn:#8e4310; --warn-bg:#fdede2; --danger:#a30000; --danger-bg:#ffebeb;
+  --font:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  --display:'Kodchasan','Poppins',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --shadow:0 0 5.5px rgba(38,50,56,.16), inset 0 0 0 1px rgba(159,162,164,.28);
+  --shadow-lg:0 12px 32px rgba(0,24,40,.14), inset 0 0 0 1px rgba(159,162,164,.28);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--font);font-size:14px;line-height:1.6;color:var(--ink);
+  background:radial-gradient(ellipse 80% 55% at 18% -5%,rgba(144,202,242,.26) 0%,rgba(144,202,242,0) 100%),radial-gradient(ellipse 70% 50% at 105% 105%,rgba(159,162,164,.14) 0%,rgba(159,162,164,0) 100%),var(--page);
+  background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--page)}
+.wrap{max-width:860px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.wrap.wide{max-width:1080px}
+h1,h2,h3{font-family:var(--display);color:var(--brand);font-weight:600;line-height:1.25;margin:0;text-wrap:balance}
+h1{font-size:26px} h2{font-size:20px} h3{font-size:16px}
+p{margin:0 0 10px} p:last-child{margin-bottom:0}
+ul,ol{margin:0 0 10px;padding-left:22px}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.92em;background:var(--wash);padding:1px 5px;border-radius:4px}
+.eyebrow{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin:0}
+.card{padding:0}
+.wrap>.card+.card{border-top:1px solid var(--line);padding-top:20px}
+.muted{color:var(--ink-60)} .small{font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+/* En-tête épuré, sans fond */
+#app.shell{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.hdr{flex:none;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 22px;padding:20px 44px 12px;padding-top:calc(20px + env(safe-area-inset-top,0px))}
+.logo{width:120px;height:auto;display:block;margin:0 0 -2px -9px}
+.logo-txt{font-family:var(--display);font-weight:600;font-size:24px;color:var(--brand);letter-spacing:.01em;line-height:1}
+.hdr-title{flex:1;min-width:180px;padding-bottom:3px}
+.hdr-title b{display:block;font-family:var(--display);font-size:17px;font-weight:600;line-height:1.25;color:var(--brand)}
+.hdr-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:2px}
+.hdr-tools .btn{background:transparent}
+.hdr-tools .btn:hover,.hdr-tools .btn[aria-pressed=true]{background:var(--wash)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line-strong);font-size:12px;font-weight:600;color:var(--brand);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.warn{background:var(--warn-bg);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(232,116,42,.45)}
+.chip.read{color:var(--slate)}
+.save{font-size:11px;color:var(--ink-45);white-space:nowrap}
+.save.err{color:var(--danger);font-weight:600}
+.progress{flex:none;height:2px;margin:0 44px;border-radius:2px;background:var(--line);overflow:hidden} .progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+/* Trois panneaux */
+.cols{flex:1;min-height:0;display:flex}
+.pane{flex:none;min-width:0;display:flex;flex-direction:column}
+.pane.left{width:var(--wl,340px)} .pane.right{width:var(--wr,400px)}
+.pane-h{flex:none;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:14px 20px 8px}
+.pane.left .pane-h{padding-left:44px} .pane.right .pane-h{padding-right:44px}
+.pane-b{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:6px 20px 24px}
+.pane.left .pane-b{padding-left:44px} .pane.right .pane-b{padding-right:44px}
+.split{flex:none;width:11px;cursor:col-resize;position:relative;touch-action:none}
+.split::after{content:"";position:absolute;top:14px;bottom:14px;left:5px;width:1px;background:var(--line-strong);transition:background .15s,width .15s,left .15s}
+.split:hover::after,.split:focus-visible::after,body.resizing .split::after{background:var(--accent);width:3px;left:4px}
+.split:focus-visible{box-shadow:none!important}
+body.resizing{cursor:col-resize;-webkit-user-select:none;user-select:none}
+.center{flex:1;min-width:0;display:flex;flex-direction:column;container-type:inline-size}
+.center-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;padding:8px 44px 24px}
+.screen{width:100%;max-width:720px;margin:auto;display:flex;flex-direction:column;gap:14px;padding-block:18px}
+.screen.top{margin:0 auto}
+.screen:has(table.fill),.screen:has(table.data){max-width:1040px}
+.screen h1{font-size:30px}
+.screen>*{margin-top:0;margin-bottom:0}
+.screen:not(.top) .sjt{margin-top:0;padding-top:0;border-top:0}
+.screen:not(.top) .qblock{margin-top:0;gap:10px}
+.screen:not(.top) .qlabel{font-size:17px;line-height:1.5}
+.screen:not(.top) .sjt>p:first-child{font-size:16px}
+.big{font-size:19px;line-height:1.5;margin:0}
+.stmt.big{font-size:16px;line-height:1.65}
+.stmt.big li{margin-bottom:8px}
+.est{flex:none;width:100%;max-width:720px;margin:0 auto}
+.screen:has(table.fill)~.est,.est:has(~.screen table.fill){max-width:1040px}
+
+/* Navigation : précédent, position, suivant */
+.nav{flex:none;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:12px 44px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.nav-mid{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;min-width:0}
+.dot{appearance:none;border:0;padding:0;background:transparent;cursor:pointer;width:13px;height:18px;position:relative;border-radius:4px}
+.dot::before{content:"";position:absolute;left:3px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--line-strong);transition:background .15s,transform .15s}
+.dot.done::before{background:var(--accent-soft)}
+.dot.cur::before{background:var(--brand);transform:scale(1.45)}
+.dot:hover::before{background:var(--accent)}
+.count{font-size:12px;color:var(--ink-60);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nav input[type=number]{width:96px}
+.btn.quiet{background:transparent;box-shadow:none;color:var(--slate);text-decoration:underline;text-underline-offset:3px;padding:0 6px}
+.btn.quiet:hover{background:transparent;color:var(--brand)}
+
+/* Choix plein écran */
+.choice2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pick.tile{white-space:normal;border-radius:12px;padding:18px;font-size:15px;font-weight:500;line-height:1.5;align-items:flex-start;min-height:104px;color:var(--ink)}
+.pick.tile input{margin-top:5px;flex:none}
+.pick.tile:hover{box-shadow:inset 0 0 0 1px var(--brand)}
+.pick.tile:has(input:checked){background:#e9f3fb;color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand)}
+.lik-scale.wide{gap:10px}
+.lik-scale.wide label{width:58px;height:58px;font-size:18px;border-radius:12px}
+
+/* Ressources */
+.res{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res-body{overflow-x:auto;min-width:0}
+.res-body img{display:block;width:100%;height:auto;border-radius:8px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.res-body.zoomable{cursor:zoom-in}
+.res-body .stmt table,.res-body table.data{font-size:12px}
+.res-body .tbl-wrap{margin-top:0}
+.modal.wide{width:min(1280px,100%);height:calc(100% - 20px)}
+.zoom-area{flex:1;min-height:0;overflow:auto;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);background:#fff;padding:0}
+.zoom-area>.stmt,.zoom-area>div:not(.stmt){padding:14px 18px}
+
+@container (max-width:680px){
+  .dots{display:none}
+  .center-scroll{padding-left:24px;padding-right:24px}
+  .nav{padding-left:24px;padding-right:24px}
+  .screen h1{font-size:25px} .big{font-size:17px} .screen:not(.top) .qlabel{font-size:16px}
+}
+@container (max-width:520px){
+  .nav .lbl{display:none}
+  .choice2{grid-template-columns:1fr}
+  .sjt-opt{grid-template-columns:1fr 1fr} .sjt-opt>span:first-child{grid-column:1/-1}
+  .lik-scale.wide label{width:50px;height:50px}
+}
+
+/* Estimation : question seule au centre, journaux grisés, aperçu à droite */
+.pane.off{opacity:.36;filter:grayscale(1);pointer-events:none;-webkit-user-select:none;user-select:none}
+.pane-b>*{flex-shrink:0}
+.pane.preview h2{font-size:19px}
+.pane.preview .fig{margin:0}
+.screen.ask{align-items:center;text-align:center;gap:20px;max-width:560px}
+.ask-row{display:flex;align-items:baseline;justify-content:center;gap:12px}
+.ask-row input[type=number]{width:170px;font-family:var(--display);font-size:40px;font-weight:600;line-height:1.2;text-align:center;color:var(--brand);padding:10px 8px;border-radius:12px}
+.ask-row .unit{font-size:18px;color:var(--ink-60)}
+
+/* Journaux */
+.pane-h .grow{min-width:max-content}
+.btn.x{padding:0;width:30px;justify-content:center;background:transparent;box-shadow:none;color:var(--slate);font-size:13px}
+.btn.x:hover{background:var(--wash)}
+.rich.journal{flex:1;min-height:260px;overflow:auto}
+
+/* Boutons */
+button{font-family:var(--font)}
+.btn{appearance:none;border:0;cursor:pointer;min-height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:500;background:var(--white);color:var(--brand);box-shadow:inset 0 0 0 1px rgba(1,78,126,.35);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:#f3f8fb}
+.btn.pri{background:var(--brand);color:#fff;box-shadow:none} .btn.pri:hover{background:#003f66}
+.btn.cta{background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(0,128,255,.22);border-radius:999px;min-height:44px;padding:0 26px;font-weight:600} .btn.cta:hover{background:#0073e6}
+.btn.danger{color:var(--danger);box-shadow:inset 0 0 0 1px rgba(163,0,0,.4)}
+.btn.sm{min-height:30px;padding:0 11px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(0,128,255,.3)!important}
+
+/* Énoncés protégés */
+.protected{-webkit-user-select:none;user-select:none}
+.protected img{-webkit-user-drag:none;pointer-events:none}
+.stmt table{border-collapse:collapse;width:100%;margin:6px 0 10px;font-size:13px}
+.stmt th,.stmt td{text-align:left;padding:6px 10px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:top}
+.stmt th{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.sec-h{margin-top:14px;padding-top:16px;border-top:1px solid var(--line)}
+.fig{margin:4px 0 6px;border-radius:10px;overflow:hidden;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.fig img{display:block;width:100%;height:auto}
+.fig figcaption{font-size:11px;color:var(--ink-60);padding:6px 12px;border-top:1px solid var(--line)}
+.fig-wrap{overflow-x:auto}
+.qblock{display:flex;flex-direction:column;gap:6px;margin:14px 0 0}
+.qlabel{font-weight:500}
+
+/* Champs */
+input[type=text],input[type=email],input[type=number],select,textarea,.rich{font-family:var(--font);font-size:14px;color:var(--ink);background:#fff;border:0;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-strong);padding:9px 12px;width:100%;line-height:1.55}
+textarea{resize:vertical;min-height:70px}
+textarea.code{font-family:var(--mono);font-size:12.5px;min-height:200px;white-space:pre;overflow:auto;tab-size:4}
+.rich{min-height:92px;outline:none;overflow-wrap:anywhere}
+.rich:empty::before{content:attr(data-ph);color:var(--ink-45)}
+.rich pre{font-family:var(--mono);font-size:12.5px;background:var(--wash);padding:8px 10px;border-radius:6px;white-space:pre-wrap;margin:6px 0}
+.rich p{margin:0 0 6px}
+.rtb{display:flex;flex-wrap:wrap;gap:2px 4px;margin-bottom:-2px}
+.rtb button{white-space:nowrap;appearance:none;border:0;cursor:pointer;min-width:30px;height:26px;padding:0 7px;border-radius:6px;background:transparent;color:var(--slate);font-size:12px;font-weight:600}
+.rtb button:hover{background:var(--wash)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:500;color:var(--slate)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+/* Mises en situation */
+.sjt{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.sjt-opt{display:grid;grid-template-columns:1fr auto auto;gap:6px 10px;align-items:start;padding:8px 10px;border-radius:8px}
+.sjt-opt:nth-child(odd){background:rgba(1,78,126,.035)}
+.pick{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate);cursor:pointer;white-space:nowrap;padding:3px 8px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line-strong);background:#fff}
+.pick input{accent-color:var(--brand);margin:0}
+.pick.plus:has(input:checked){background:var(--ok-bg);color:var(--ok);box-shadow:inset 0 0 0 1px rgba(31,157,85,.45)}
+.pick.moins:has(input:checked){background:var(--warn-bg);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(232,116,42,.45)}
+.val-list{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.val-list span{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--wash);color:var(--brand)}
+.pref{display:grid;grid-template-columns:36px 1fr 1fr;gap:8px;align-items:stretch;margin-top:8px}
+.pref .pick{white-space:normal;border-radius:8px;padding:8px 10px;font-weight:500;font-size:13px;align-items:flex-start}
+.lik{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.lik-scale{display:flex;gap:4px}
+.lik-scale label{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--line-strong);font-size:13px;font-weight:600;color:var(--slate);cursor:pointer;position:relative}
+.lik-scale input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.lik-scale label:has(input:checked){background:var(--brand);color:#fff;box-shadow:none}
+.lik-scale label:has(input:focus-visible){box-shadow:0 0 0 3px rgba(0,128,255,.3)}
+
+/* Tableaux à compléter */
+.tbl-wrap{overflow-x:auto;margin-top:8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table.fill{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+table.fill th{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);text-align:left;padding:8px 10px;background:rgba(1,78,126,.04);vertical-align:bottom}
+table.fill td{padding:6px 8px;vertical-align:top;border-top:1px solid var(--line)}
+table.fill td.fx{padding:9px 10px}
+table.fill textarea{min-height:44px;padding:6px 8px;font-size:13px;box-shadow:inset 0 0 0 1px var(--line)}
+table.fill select{padding:6px 8px;font-size:13px;min-width:74px}
+table.data{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+table.data th{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);text-align:left;padding:6px 10px}
+table.data td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+table.data td.n,table.data th.n{text-align:right;white-space:nowrap}
+
+.rich-view{white-space:normal} .rich-view pre{font-family:var(--mono);font-size:12px;white-space:pre-wrap;margin:6px 0}
+/* Fenêtres */
+.veil{position:fixed;inset:0;z-index:40;background:rgba(0,24,40,.38);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);padding:22px 24px;width:min(560px,100%);max-height:calc(100% - 20px);overflow:auto;display:flex;flex-direction:column;gap:12px}
+.tabs{display:inline-flex;gap:2px;padding:2px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--line-strong)}
+.tabs button{white-space:nowrap;appearance:none;border:0;cursor:pointer;min-height:28px;padding:0 12px;border-radius:6px;background:transparent;color:var(--slate);font-size:12px;font-weight:500}
+.tabs button[aria-pressed=true]{background:var(--brand);color:#fff}
+.entry{border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);padding:10px 12px;font-size:13px}
+.entry .meta{font-size:11px;color:var(--ink-45);margin-bottom:4px}
+.entry dt{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-top:6px}
+.entry dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.note{border-radius:10px;padding:10px 14px;font-size:13px;background:#e6eef4;color:var(--slate)}
+.note.warn{background:var(--warn-bg);color:var(--warn)} .note.err{background:var(--danger-bg);color:var(--danger)} .note.ok{background:var(--ok-bg);color:var(--ok)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#e6eef4;color:var(--slate)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.run{background:#e0f0ff;color:#005fbf}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{border-radius:12px;box-shadow:inset 0 0 0 1px rgba(159,162,164,.45);padding:12px 16px}
+.kpi b{display:block;font-family:var(--display);font-weight:600;font-size:22px;line-height:1.2;color:var(--brand)}
+.ribbon{background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:500;padding:6px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+.ans{white-space:pre-wrap;overflow-wrap:anywhere;background:rgba(1,78,126,.035);border-radius:8px;padding:8px 12px;margin:4px 0 12px;font-size:13px}
+.ans.code{font-family:var(--mono);font-size:12px;overflow-x:auto;white-space:pre}
+.ans:empty::before{content:"(vide)";color:var(--ink-45)}
+details.acc{border-top:1px solid var(--line);padding:10px 0}
+details.acc>summary{cursor:pointer;font-weight:600;color:var(--brand);list-style-position:outside}
+.up-prev{max-width:420px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);display:block;margin-top:6px}
+.kitfile{margin-top:8px}
+.kitfile textarea{font-family:var(--mono);font-size:12px;min-height:120px;white-space:pre}
+@media (max-width:899px){
+  .hdr{padding:12px 16px 8px;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));gap:6px 12px;align-items:center}
+  .logo{width:88px;margin-left:-7px}
+  .hdr-title b{font-size:14px}
+  .progress{margin:0 16px}
+  .center-scroll{padding:6px 16px 20px}
+  .nav{padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));gap:8px}
+  .dots{display:none}
+  .split{display:none}
+  .pane{position:fixed;inset:0;z-index:25;width:auto!important;background:var(--page);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .pane .pane-h,.pane .pane-b{padding-left:max(16px,env(safe-area-inset-left,0px))!important;padding-right:max(16px,env(safe-area-inset-right,0px))!important}
+  .screen h1{font-size:24px} .big{font-size:17px}
+  .lik-scale.wide label{width:50px;height:50px}
+}
+@media (max-width:560px){
+  .choice2{grid-template-columns:1fr}
+  h1{font-size:22px}
+  .sjt-opt{grid-template-columns:1fr 1fr} .sjt-opt>span:first-child{grid-column:1/-1}
+  .pref{grid-template-columns:1fr} .lik{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ===== Ajouts pour la plateforme de cours ===== */
+[hidden]{display:none!important}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);z-index:60;max-width:min(560px,calc(100% - 32px));background:var(--ink);color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)} #toast.err{background:var(--danger)}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
+.btn.name{justify-content:flex-start;min-height:42px;font-weight:400;color:var(--ink);white-space:normal;text-align:left}
+.btn.name b{font-weight:600;color:var(--brand)}
+input.code-in{font-family:var(--mono);font-size:28px;letter-spacing:.3em;text-transform:uppercase;text-align:center;max-width:320px;padding:12px}
+.partbar{flex:none;display:flex;gap:6px;padding:2px 44px 10px;overflow-x:auto}
+.part{appearance:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 12px 0 6px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line-strong);color:var(--slate);font-size:12px;font-weight:500;white-space:nowrap}
+.part .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--wash);color:var(--brand);font-weight:600;font-size:11px}
+.part:hover{background:var(--wash)}
+.part.cur{background:var(--brand);color:#fff;box-shadow:none} .part.cur .n{background:#fff}
+.part .tag{font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn)}
+.part .tag.pace{background:#e0f0ff;color:#005fbf}
+.qhead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+.who{font-size:11px;font-weight:600;color:var(--warn);background:var(--warn-bg);padding:2px 9px;border-radius:999px;white-space:nowrap}
+.qblock.held .rich,.qblock.held input,.qblock.held textarea,table.fill .held{box-shadow:inset 0 0 0 2px rgba(232,116,42,.6)!important;background:#fffaf5}
+.rich[contenteditable=false],input[readonly],textarea[readonly],select:disabled{background:rgba(1,78,126,.035);color:var(--ink-60)}
+table.fill th.n,table.fill td .n{text-align:right} table.fill th.wide,table.fill td.wide{min-width:220px}
+table.fill th.act,table.fill td.act{width:36px;padding:6px 2px}
+table.fill textarea{min-height:34px;height:34px;resize:none;overflow:hidden;line-height:1.4}
+table.fill td{min-width:96px} table.fill td.fx{min-width:90px;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--slate)}
+table.fill tfoot td{padding:9px 10px;border-top:1px solid var(--line-strong);font-weight:600;color:var(--brand)} table.fill tfoot td.n{text-align:right;font-variant-numeric:tabular-nums}
+.files{display:flex;flex-direction:column;gap:6px}
+.file{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 10px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line)}
+.file .btn.quiet{padding:0;min-height:26px;text-align:left;white-space:normal;overflow-wrap:anywhere}
+.dot-on{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line-strong);margin-right:6px;flex:none} .dot-on.on{background:#1f9d55}
+.pill.off{background:transparent;box-shadow:inset 0 0 0 1px var(--line-strong);color:var(--ink-45)}
+.veil.lock{background:rgba(0,24,40,.72)}
+.jform{padding-top:12px;border-top:1px solid var(--line)}
+.btn.sm.quiet{min-height:24px}
+/* Backoffice */
+.adm{max-width:1500px;margin:0 auto;padding-bottom:80px}
+.adm .hdr{padding-bottom:8px}
+.adm>.note{margin:0 44px 10px}
+.ctl{display:flex;flex-wrap:wrap;gap:14px 28px;padding:12px 44px 16px;border-bottom:1px solid var(--line)}
+.ctl-b{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pacebtn{max-width:230px;overflow:hidden;text-overflow:ellipsis;display:inline-block;line-height:30px}
+.pacebtn:disabled{opacity:1}
+.adm-body{display:flex;flex-direction:column;gap:16px;padding:18px 44px}
+body:has(.drawer) .adm{margin-right:min(620px,48vw)}
+table.promo td{vertical-align:middle}
+.rowlink{cursor:pointer} .rowlink:hover td{background:rgba(1,78,126,.035)} .rowlink.sel td{background:#e9f3fb}
+.who-c{display:flex;align-items:center;gap:10px}
+.ava{flex:none;width:38px;height:38px;border-radius:50%;background:var(--wash);color:var(--brand);font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;text-transform:uppercase}
+.ava img{width:100%;height:100%;object-fit:cover}
+.bar{width:110px;height:6px;border-radius:6px;background:var(--line);overflow:hidden;display:inline-block;margin-right:8px;vertical-align:middle} .bar i{display:block;height:100%;background:var(--accent)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,48vw);z-index:20;background:#fff;box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+.drawer-b{flex:1;overflow:auto;padding:20px 24px 60px;display:flex;flex-direction:column;gap:14px}
+.drawer-b>*{flex-shrink:0}
+.sub{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line)}
+.codes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.codecard{border:1px dashed var(--line-strong);border-radius:8px;padding:10px 14px;break-inside:avoid}
+.bigcode{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:.18em;color:var(--brand);margin-top:4px}
+@media (max-width:899px){.partbar{padding:2px 16px 8px}.ctl,.adm-body{padding-left:16px;padding-right:16px}.drawer{width:100%}body:has(.drawer) .adm{margin-right:0}}
+@media print{
+  body{background:#fff} .noprint,.hdr,.ctl,.drawer,#toast{display:none!important}
+  .adm-body{padding:0} .codes{grid-template-columns:repeat(3,1fr);gap:0} .codecard{border-radius:0;margin:-0.5px;padding:14px 16px}
+}
+.pill{white-space:nowrap}
+table.fill td{min-width:84px} table.fill th.wide,table.fill td.wide{min-width:170px}
+table.promo .pill{margin:1px 0}
+
+</style>
+</head>
+<body>
+<div id="app"><div class="wrap"><p class="muted">Chargement…</p></div></div>
+<noscript>Cette page a besoin de JavaScript.</noscript>
+<script>
+/* ============ Plateforme de cours Fluidy : socle commun ============ */
+const SUPA = 'https://hrdalytozefzwffllpui.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyZGFseXRvemVmendmZmxscHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzU3NzEsImV4cCI6MjA5MzA1MTc3MX0.b5wrr4Wppemo7-HYXTz7GBmfaOUi6gx8JP-qeUeQjGs';
+const HEAD = {apikey: KEY, Authorization: 'Bearer ' + KEY};
+
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pad = n => String(n).padStart(2, '0');
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (k === 'value') n.value = v;
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(c));
+  return n;
+}
+const OK_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'P', 'DIV', 'BR', 'UL', 'OL', 'LI', 'PRE', 'CODE', 'BLOCKQUOTE', 'SPAN']);
+function sanitize(html) {
+  const t = document.createElement('template'); t.innerHTML = String(html || '');
+  (function walk(node) {
+    for (const c of [...node.childNodes]) {
+      if (c.nodeType === 1) {
+        if (!OK_TAGS.has(c.tagName)) {
+          if (['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'IMG', 'SVG', 'LINK', 'META'].includes(c.tagName)) { c.remove(); continue; }
+          walk(c); c.replaceWith(...c.childNodes); continue;
+        }
+        for (const a of [...c.attributes]) c.removeAttribute(a.name);
+        walk(c);
+      } else if (c.nodeType !== 3) c.remove();
+    }
+  })(t.content);
+  return t.innerHTML;
+}
+/* Énoncés rédigés par l'enseignant : mêmes balises, plus titres, tableaux et liens. */
+const OK_STMT = new Set([...OK_TAGS, 'H3', 'H4', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD', 'A', 'HR', 'SUB', 'SUP']);
+function stmt(html) {
+  const t = document.createElement('template'); t.innerHTML = String(html || '');
+  (function walk(node) {
+    for (const c of [...node.childNodes]) {
+      if (c.nodeType === 1) {
+        if (!OK_STMT.has(c.tagName)) { if (['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'SVG', 'IMG'].includes(c.tagName)) { c.remove(); continue; } walk(c); c.replaceWith(...c.childNodes); continue; }
+        for (const a of [...c.attributes]) { if (c.tagName === 'A' && a.name === 'href' && /^https?:\/\//i.test(a.value)) continue; c.removeAttribute(a.name); }
+        if (c.tagName === 'A') { c.setAttribute('target', '_blank'); c.setAttribute('rel', 'noopener'); }
+        walk(c);
+      } else if (c.nodeType !== 3) c.remove();
+    }
+  })(t.content);
+  return t.innerHTML;
+}
+const plain = h => String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const filled = v => v != null && plain(typeof v === 'string' ? v : JSON.stringify(v)) !== '';
+function fmtTime(ts) { if (!ts) return '—'; const d = new Date(ts); return pad(d.getHours()) + ' h ' + pad(d.getMinutes()); }
+function fmtClock(ts) { if (!ts) return '—'; const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ' h ' + pad(d.getMinutes()); }
+function fmtSize(n) { if (n == null) return ''; return n > 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' Mo' : Math.max(1, Math.round(n / 1024)) + ' Ko'; }
+const fmtNum = n => (Math.round(n * 100) / 100).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const num = s => { const x = parseFloat(String(s == null ? '' : s).replace(/\s/g, '').replace(',', '.')); return isFinite(x) ? x : 0; };
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('cours:' + k); return v == null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { v == null ? localStorage.removeItem('cours:' + k) : localStorage.setItem('cours:' + k, String(v)); } catch (e) {} }
+};
+
+/* ---------- Appels à la base ---------- */
+class ApiError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
+async function api(fn, args, opts) {
+  let res;
+  try {
+    res = await fetch(SUPA + '/rest/v1/rpc/' + fn, {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify(args || {}), keepalive: !!(opts && opts.keepalive)});
+  } catch (e) { throw new ApiError('NET', 'Connexion impossible. Vérifiez le réseau.'); }
+  const txt = await res.text();
+  let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
+  if (!res.ok) {
+    const m = String((data && data.message) || '');
+    const i = m.indexOf('|');
+    if (i > 0 && i < 12) throw new ApiError(m.slice(0, i), m.slice(i + 1));
+    throw new ApiError(res.status >= 500 ? 'NET' : 'ERR', res.status >= 500 ? 'Le serveur ne répond pas. Nouvelle tentative…' : (m || 'Erreur inattendue.'));
+  }
+  return data;
+}
+const objPath = p => p.split('/').map(encodeURIComponent).join('/');
+async function putFile(path, file) {
+  const r = await fetch(SUPA + '/storage/v1/object/cours/' + objPath(path), {method: 'POST', headers: {...HEAD, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false'}, body: file});
+  if (!r.ok) throw new ApiError('UP', 'L\'envoi du fichier a échoué (' + r.status + ').');
+}
+async function getBlob(path) {
+  const r = await fetch(SUPA + '/storage/v1/object/authenticated/cours/' + objPath(path), {headers: HEAD});
+  if (!r.ok) throw new ApiError('DOWN', 'Téléchargement impossible (' + r.status + ').');
+  return r.blob();
+}
+function saveBlob(blob, name) {
+  const u = URL.createObjectURL(blob), a = el('a', {href: u, download: name});
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000);
+}
+
+/* ---------- Fenêtres et messages ---------- */
+function modal(build, opts) {
+  opts = opts || {};
+  const veil = el('div', {class: 'veil' + (opts.cls ? ' ' + opts.cls : ''), role: 'dialog', 'aria-modal': 'true'});
+  const box = el('div', {class: 'modal' + (opts.wide ? ' wide' : '')}); veil.append(box);
+  const onKey = e => { if (e.key === 'Escape' && !opts.sticky) close(); };
+  const close = () => { veil.remove(); document.removeEventListener('keydown', onKey); if (opts.onclose) opts.onclose(); };
+  document.addEventListener('keydown', onKey);
+  if (!opts.sticky) veil.addEventListener('mousedown', e => { if (e.target === veil) close(); });
+  build(box, close); document.body.append(veil);
+  const f = box.querySelector('input,textarea,select,button'); if (f) f.focus();
+  return close;
+}
+function info(title, text) { modal((b, close) => b.append(el('h2', null, title), el('p', null, text), el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: close}, 'Fermer')))); }
+function confirmBox(title, text, okLabel, onOk, danger) {
+  modal((b, close) => {
+    const err = el('p', {class: 'note err', hidden: true});
+    const ok = el('button', {class: 'btn ' + (danger ? 'danger' : 'pri'), onclick: async () => { ok.disabled = true; try { await onOk(); close(); } catch (e) { err.hidden = false; err.textContent = e.message; ok.disabled = false; } }}, okLabel);
+    b.append(el('h2', null, title), el('p', null, text), err, el('div', {class: 'row'}, ok, el('button', {class: 'btn', onclick: close}, 'Annuler')));
+  });
+}
+let toastT = null;
+function toast(msg, kind) {
+  let t = $('#toast'); if (!t) { t = el('div', {id: 'toast', role: 'status'}); document.body.append(t); }
+  t.className = 'show ' + (kind || ''); t.textContent = msg;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.className = ''; }, kind === 'err' ? 6000 : 3500);
+}
+
+/* ---------- Champ de texte riche ---------- */
+function makeRich(html, onChange, opts) {
+  opts = opts || {};
+  const ed = el('div', {class: 'rich', contenteditable: opts.ro ? 'false' : 'true', role: 'textbox', 'aria-multiline': 'true', 'aria-label': opts.label, 'data-ph': opts.ph || 'Votre réponse', html: sanitize(html || '')});
+  const cmd = (c, v) => () => { if (ed.contentEditable !== 'true') return; ed.focus(); document.execCommand(c, false, v); ed.dispatchEvent(new Event('input')); };
+  const tb = el('div', {class: 'rtb'},
+    el('button', {type: 'button', title: 'Gras', onclick: cmd('bold')}, 'G'),
+    el('button', {type: 'button', title: 'Italique', style: 'font-style:italic', onclick: cmd('italic')}, 'I'),
+    el('button', {type: 'button', title: 'Liste à puces', onclick: cmd('insertUnorderedList')}, '• Liste'),
+    el('button', {type: 'button', title: 'Liste numérotée', onclick: cmd('insertOrderedList')}, '1. Liste'),
+    el('button', {type: 'button', title: 'Bloc de code', onclick: cmd('formatBlock', 'pre')}, '</>'),
+    el('button', {type: 'button', title: 'Texte normal', onclick: cmd('formatBlock', 'div')}, 'Normal'));
+  ed.addEventListener('paste', e => { e.preventDefault(); const t = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t); });
+  ed.addEventListener('input', () => onChange(sanitize(ed.innerHTML)));
+  return [tb, ed];
+}
+function autoGrow(t) { t.style.height = 'auto'; t.style.height = Math.max(34, t.scrollHeight + 2) + 'px'; }
+
+/* ---------- Contenu d'un cours : parties, écrans ---------- */
+const ANSWERABLE = ['q', 'table', 'upload'];
+const RES_T = ['img', 'res'];
+function itemsOf(course) { const out = []; (course.parts || []).forEach((p, pi) => (p.items || []).forEach(it => { if (ANSWERABLE.includes(it.t)) out.push({...it, part: p.id, pi}); })); return out; }
+function buildScreens(part) {
+  const out = []; let sec = '', pending = [];
+  const flush = () => { if (pending.length) { out.push({sec, items: pending, ref: sec || 'consigne'}); pending = []; } };
+  for (const it of (part.items || [])) {
+    if (RES_T.includes(it.t)) continue;
+    if (it.t === 'h') { flush(); sec = it.title; continue; }
+    if (it.t === 'text') { pending.push(it); continue; }
+    if (ANSWERABLE.includes(it.t)) { out.push({sec, items: [...pending, it], ref: it.label ? plain(it.label).slice(0, 60) : it.id, main: it}); pending = []; continue; }
+  }
+  flush();
+  if (!out.length) out.push({sec: '', items: [], ref: 'partie'});
+  return out;
+}
+/* Lignes d'un tableau : une clé « tableau/ligne/_ » par ligne ({o: ordre, d: supprimée}), une clé par cellule. */
+function tableRows(get, keys, id) {
+  const rows = [];
+  for (const k of keys) { if (!k.startsWith(id + '/') || !k.endsWith('/_')) continue; const m = get(k); if (m && !m.d) rows.push({rid: k.slice(id.length + 1, -2), o: m.o || 0}); }
+  return rows.sort((a, b) => a.o - b.o || (a.rid < b.rid ? -1 : 1));
+}
+const rid = () => Math.random().toString(36).slice(2, 8);
+
+/* ============ Vue étudiant ============ */
+const S = {tok: LS.get('tok', null), me: null, boot: null, course: null, sy: null, A: new Map(), dirty: new Map(), sending: null,
+  J: [], F: new Map(), since: 0, gid: null, part: null, screen: 0, focus: null, view: 'boot', closed: null, sig: '', welcome: 0, net: true, save: 'saved'};
+try { S.me = JSON.parse(LS.get('me', 'null')); } catch (e) {}
+let FIELDS = new Map(), TABLES = [], UPLOADS = [], SCREENS = {}, syncing = false, syncT = null, flushT = null, lockClose = null, invClose = null, journalTab = 'bord', loopOn = false;
+const seenInv = new Set(), blobCache = new Map();
+const ui = {left: LS.get('left', '1') === '1', right: LS.get('right', '1') === '1', nleft: false, nright: false, wl: +LS.get('wl', 330) || 330, wr: +LS.get('wr', 360) || 360};
+const narrow = () => window.innerWidth < 900;
+const paneOpen = side => narrow() ? ui['n' + side] : ui[side];
+const parts = () => (S.course && S.course.content.parts) || [];
+const curPart = () => parts()[S.part] || null;
+const screensOf = p => SCREENS[p.id] || (SCREENS[p.id] = buildScreens(p));
+const ansOf = id => { const a = S.A.get(id); return a ? a.v : null; };
+function nameOf(id, short) {
+  const m = S.sy && S.sy.group.members.find(x => x.id === id) || (S.boot && S.boot.students || []).find(x => x.id === id);
+  if (!m) return id === (S.me && S.me.id) ? S.me.prenom : 'Un camarade';
+  return short ? m.prenom : m.prenom + ' ' + m.nom;
+}
+function isRO(pi) {
+  const g = S.sy.group, p = parts()[pi]; if (!p) return true;
+  const ov = (g.overrides || {})[p.id];
+  if (ov === 'locked') return true; if (ov === 'unlocked') return false;
+  return !!S.sy.course.session_active && pi < g.ack_part;
+}
+
+/* ---------- Démarrage, connexion ---------- */
+async function studentStart() {
+  S.view = 'boot'; render();
+  if (S.tok && S.me) { await syncOnce(); if (S.tok) { startLoop(); return; } }
+  showLogin();
+}
+async function showLogin() {
+  try { S.boot = await api('cours_boot'); } catch (e) { S.boot = {state: 'error', msg: e.message}; }
+  S.view = 'login'; render();
+  if (S.boot.state !== 'open') setTimeout(() => { if (S.view === 'login' && !S.tok) showLogin(); }, 8000);
+}
+function loginScreen(root) {
+  const wrap = el('div', {class: 'wrap'}), b = S.boot;
+  root.append(wrap);
+  wrap.append(el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#admin', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace enseignant')));
+  if (b.state !== 'open') {
+    wrap.append(el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, b.state === 'paused' ? 'La plateforme est en pause' : b.state === 'none' ? 'Aucun cours n\'est ouvert pour le moment' : 'Connexion impossible'),
+      el('p', {class: 'big muted'}, b.state === 'error' ? b.msg : 'Cette page se mettra à jour toute seule dès que l\'enseignant ouvrira le cours.')));
+    return;
+  }
+  const box = el('div', {class: 'stack', style: 'margin-top:5vh'}); wrap.append(box);
+  box.append(el('p', {class: 'eyebrow'}, 'Cours ISIMA · Fluidy'), el('h1', null, b.course.title));
+  let sel = null;
+  const list = el('div', {class: 'names'}), search = el('input', {type: 'text', placeholder: 'Cherchez votre nom', 'aria-label': 'Cherchez votre nom', oninput: paint});
+  const step2 = el('div', {class: 'stack', hidden: true});
+  function paint() {
+    const q = search.value.trim().toLowerCase(); list.textContent = '';
+    b.students.filter(s => !q || (s.nom + ' ' + s.prenom).toLowerCase().includes(q)).forEach(s =>
+      list.append(el('button', {class: 'btn name', type: 'button', onclick: () => pick(s)}, el('b', null, s.nom), ' ', s.prenom)));
+    if (!list.children.length) list.append(el('p', {class: 'muted'}, 'Aucun nom ne correspond. Demandez à l\'enseignant de vous ajouter.'));
+  }
+  const step1 = el('div', {class: 'stack'}, el('p', {class: 'big'}, 'Qui êtes-vous ?'), search, list);
+  function pick(s) {
+    sel = s; api('cours_login_start', {p_student: s.id}).catch(() => {});
+    step1.hidden = true; step2.hidden = false; step2.textContent = '';
+    const err = el('p', {class: 'note err', hidden: true});
+    const code = el('input', {type: 'text', class: 'code-in', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', maxlength: 12, placeholder: 'CODE', 'aria-label': 'Votre code personnel'});
+    const go = el('button', {class: 'btn cta', type: 'submit'}, 'Se connecter');
+    const form = el('form', {class: 'stack', onsubmit: async e => {
+      e.preventDefault(); go.disabled = true; err.hidden = true;
+      try {
+        const r = await api('cours_login', {p_student: s.id, p_code: code.value, p_ua: navigator.userAgent});
+        if (!r.ok) { err.hidden = false; err.textContent = r.error; go.disabled = false; code.select(); return; }
+        S.tok = r.token; S.me = r.student; LS.set('tok', S.tok); LS.set('me', JSON.stringify(S.me));
+        S.view = 'boot'; render(); await syncOnce(); startLoop();
+      } catch (e2) { err.hidden = false; err.textContent = e2.message; go.disabled = false; }
+    }}, el('p', {class: 'big'}, 'Bonjour ', el('b', null, s.prenom + ' ' + s.nom), '. Saisissez le code personnel remis par l\'enseignant.'), code, err,
+      el('div', {class: 'row'}, go, el('button', {class: 'btn quiet', type: 'button', onclick: () => { step2.hidden = true; step1.hidden = false; }}, 'Ce n\'est pas moi')));
+    step2.append(form); code.focus();
+  }
+  box.append(step1, step2); paint(); search.focus();
+}
+function logout(expired) {
+  const t = S.tok; S.tok = null; LS.set('tok', null); LS.set('me', null);
+  if (t && !expired) api('cours_logout', {p_token: t}).catch(() => {});
+  S.sy = null; S.course = null; S.A.clear(); S.dirty.clear(); S.J = []; S.F.clear(); S.since = 0; S.gid = null; S.part = null; S.sig = '';
+  document.querySelectorAll('.veil').forEach(v => v.remove()); lockClose = null; invClose = null;
+  if (expired) toast('Votre session a été fermée : reconnectez-vous.', 'err');
+  showLogin();
+}
+
+/* ---------- Synchronisation ---------- */
+function startLoop() {
+  if (loopOn) return; loopOn = true;
+  const tick = async () => { if (!S.tok) { loopOn = false; return; } await syncOnce(); syncT = setTimeout(tick, document.hidden ? 15000 : (S.view === 'closed' ? 6000 : 2500)); };
+  syncT = setTimeout(tick, 2500);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.tok) { clearTimeout(syncT); tick(); } else if (document.hidden) flush(true); });
+  window.addEventListener('pagehide', () => flush(true));
+}
+let soonT = null;
+function syncSoon() { clearTimeout(soonT); soonT = setTimeout(syncOnce, 250); }
+async function syncOnce() {
+  if (syncing || !S.tok) return; syncing = true;
+  try {
+    const part = S.view === 'main' || S.view === 'done' ? curPart() : null;
+    const r = await api('cours_sync', {p_token: S.tok, p_since: S.since, p_state: {part: part ? part.id : null, screen: S.screen, editing: S.focus}});
+    if (!S.net) { S.net = true; paintSave(); }
+    await applySync(r);
+  } catch (e) {
+    if (e.code === 'AUTH') { syncing = false; return logout(true); }
+    if (e.code === 'PAUSED' || e.code === 'NOCOURSE') await applySync({state: e.code === 'PAUSED' ? 'paused' : 'none'});
+    else { S.net = false; paintSave(); if (S.view === 'boot') { S.view = 'neterr'; render(); } }
+  } finally { syncing = false; }
+}
+async function applySync(r) {
+  if (r.state !== 'open') { if (S.view !== 'closed' || S.closed !== r.state) { S.view = 'closed'; S.closed = r.state; closeVeils(); render(); } return; }
+  let again = false;
+  if (!S.course || S.course.id !== r.course.id || S.course.content_at !== r.course.content_at) {
+    const keep = S.course && S.course.id === r.course.id;
+    S.course = await api('cours_content', {p_token: S.tok}); SCREENS = {}; S.sig = '';
+    if (!keep) { S.part = null; S.screen = 0; S.gid = null; }
+  }
+  if (S.gid !== r.group.id) {
+    if (S.gid) toast('Vous travaillez maintenant dans un autre projet.');
+    S.gid = r.group.id; S.A.clear(); S.dirty.clear(); S.J = []; S.F.clear(); S.sig = '';
+    if (S.since !== 0) { S.since = 0; again = true; }
+  }
+  const changed = [];
+  if (!again) {
+    for (const a of r.answers) {
+      if (S.dirty.has(a.id) || (S.sending && S.sending.has(a.id))) continue;
+      const cur = S.A.get(a.id);
+      if (!cur || cur.rev < a.rev) { S.A.set(a.id, {v: a.v, rev: a.rev, by: a.by}); changed.push(a.id); }
+    }
+    let jn = false;
+    for (const j of r.journal) if (!S.J.some(x => x.id === j.id)) { S.J.push(j); jn = true; }
+    let fn = false;
+    for (const f of r.files) { S.F.set(f.id, f); fn = true; }
+    S.since = r.rev; S.sy = r;
+    if (S.view !== 'main' && S.view !== 'done') enterCourse();
+    const sig = [r.group.id, r.group.ack_part, JSON.stringify(r.group.overrides), r.course.session_active, r.course.pace_part, r.group.finished_at, r.me.role, r.group.members.map(m => m.id).join(',')].join('|');
+    if (sig !== S.sig) { S.sig = sig; render(); }
+    else {
+      for (const id of changed) { const f = FIELDS.get(id); if (f) f.set(S.A.get(id).v); }
+      if (changed.length) TABLES.forEach(t => t.refresh());
+      if (fn) UPLOADS.forEach(u => u.refresh());
+      if (jn) paintJournal();
+      paintPresence(); paintChip(); paintGroupBtn();
+    }
+    checkLock(); checkInvites();
+  } else { S.sy = r; syncing = false; await syncOnce(); }
+}
+function enterCourse() {
+  const c = S.course, n = parts().length;
+  const done = LS.get('w:' + c.id + ':' + S.me.id, '') === '1' || !(c.content.welcome || []).length;
+  let p = parseInt(LS.get('pos:' + c.id + ':' + S.me.id, ''), 10), sc = parseInt(LS.get('scr:' + c.id + ':' + S.me.id, '0'), 10) || 0;
+  if (!done) { S.part = null; S.welcome = 0; }
+  else { S.part = isFinite(p) && p >= 0 && p < n ? p : Math.min(S.sy.course.session_active ? S.sy.course.pace_part : 0, n - 1); S.screen = Math.min(sc, screensOf(parts()[S.part]).length - 1); }
+  S.view = 'main'; S.sig = '';
+}
+function keepPos() { if (S.part == null) return; LS.set('pos:' + S.course.id + ':' + S.me.id, S.part); LS.set('scr:' + S.course.id + ':' + S.me.id, S.screen); }
+function closeVeils() { document.querySelectorAll('.veil').forEach(v => v.remove()); lockClose = null; invClose = null; }
+
+/* ---------- Enregistrement ---------- */
+function setAns(id, v) {
+  const cur = S.A.get(id);
+  S.A.set(id, {v, rev: cur ? cur.rev : 0, by: S.me.id}); S.dirty.set(id, v);
+  S.save = 'pending'; paintSave();
+  if (!flushT) flushT = setTimeout(flush, 1200);
+}
+async function flush(keepalive) {
+  clearTimeout(flushT); flushT = null;
+  if (S.sending || !S.dirty.size || !S.tok) return;
+  S.sending = S.dirty; S.dirty = new Map(); S.save = 'saving'; paintSave();
+  const items = [...S.sending].map(([id, value]) => ({id, value}));
+  try {
+    const r = await api('cours_save', {p_token: S.tok, p_items: items}, {keepalive: keepalive === true && JSON.stringify(items).length < 60000});
+    S.sending = null;
+    if (r.rejected && r.rejected.length) {
+      toast(r.rejected.some(x => x.why === 'verrou') ? 'Cette partie est en lecture seule : la modification n\'a pas été enregistrée.' : 'Une réponse n\'a pas pu être enregistrée.', 'err');
+      for (const x of r.rejected) S.A.delete(x.id);
+      S.since = 0; S.sig = ''; syncSoon();
+    }
+    S.save = S.dirty.size ? 'pending' : 'saved'; paintSave();
+    if (S.dirty.size) flushT = setTimeout(flush, 600);
+  } catch (e) {
+    for (const [k, v] of S.sending) if (!S.dirty.has(k)) S.dirty.set(k, v);
+    S.sending = null;
+    if (e.code === 'AUTH') return logout(true);
+    S.save = 'err'; paintSave(); flushT = setTimeout(flush, 3000);
+  }
+}
+function paintSave() {
+  const s = $('#save'); if (!s) return;
+  const err = S.save === 'err' || !S.net;
+  s.className = 'save' + (err ? ' err' : '');
+  s.textContent = err ? 'Hors ligne : nouvelle tentative…' : S.save === 'saved' ? 'Enregistré' : 'Enregistrement…';
+}
+window.addEventListener('beforeunload', e => { if (S.dirty.size || S.sending) { flush(true); e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- Rendu général ---------- */
+function render() {
+  const root = $('#app'); root.textContent = ''; root.className = '';
+  document.querySelectorAll('body > .pane').forEach(p => p.remove());
+  FIELDS = new Map(); TABLES = []; UPLOADS = [];
+  if (S.view === 'boot') return root.append(el('div', {class: 'wrap'}, el('p', {class: 'muted'}, 'Chargement…')));
+  if (S.view === 'neterr') return root.append(el('div', {class: 'wrap'}, el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, 'Connexion impossible'), el('p', {class: 'big muted'}, 'Vérifiez votre réseau. La page réessaie toute seule.'), el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: () => location.reload()}, 'Réessayer')))));
+  if (S.view === 'login') return loginScreen(root);
+  if (S.view === 'closed') return root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('button', {class: 'btn quiet', onclick: () => logout()}, 'Se déconnecter')),
+    el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, S.closed === 'paused' ? 'La plateforme est en pause' : 'Aucun cours n\'est ouvert pour le moment'), el('p', {class: 'big muted'}, 'Vos réponses sont enregistrées. Cette page se rouvrira toute seule dès que l\'enseignant relancera le cours.'))));
+  root.className = 'shell';
+  root.style.setProperty('--wl', ui.wl + 'px'); root.style.setProperty('--wr', ui.wr + 'px');
+  header(root);
+  if (S.part == null) return welcome(root);
+  partBar(root);
+  const cols = el('div', {class: 'cols'}); root.append(cols);
+  const host = narrow() ? document.body : cols;
+  if (paneOpen('left')) { host.append(journalPane()); if (!narrow()) cols.append(split('l')); }
+  const center = el('main', {class: 'center'}); cols.append(center);
+  if (S.view === 'done') doneScreen(center); else screenView(center);
+  if (paneOpen('right')) { if (!narrow()) cols.append(split('r')); host.append(resPane()); }
+  paintPresence(); paintChip(); paintSave();
+}
+function header(root) {
+  const h = el('header', {class: 'hdr'}); h.append(el('span', {class: 'logo-txt'}, 'Fluidy'));
+  const p = curPart();
+  h.append(el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, p ? 'Partie ' + (S.part + 1) + ' sur ' + parts().length + ' · ' + S.course.title : 'Cours ISIMA · Fluidy'), el('b', null, p ? p.title : S.course.title)));
+  const tools = el('div', {class: 'hdr-tools'}); h.append(tools);
+  if (S.sy.group.finished_at) tools.append(el('span', {class: 'pill ok'}, 'Exercice terminé'));
+  if (p) tools.append(el('span', {class: 'chip', id: 'chip', role: 'timer'}));
+  tools.append(el('span', {class: 'save', id: 'save'}));
+  tools.append(el('button', {class: 'btn sm', type: 'button', id: 'btn-group', onclick: groupModal}));
+  if (p) {
+    tools.append(el('button', {class: 'btn sm', type: 'button', 'aria-pressed': String(paneOpen('left')), onclick: () => togglePane('left')}, 'Journaux'));
+    tools.append(el('button', {class: 'btn sm', type: 'button', 'aria-pressed': String(paneOpen('right')), onclick: () => togglePane('right')}, 'Ressources'));
+  }
+  tools.append(el('button', {class: 'btn sm', type: 'button', title: S.me.prenom + ' ' + S.me.nom, onclick: () => confirmBox('Se déconnecter ?', 'Vos réponses restent enregistrées. Il faudra votre code personnel pour revenir.', 'Se déconnecter', async () => { await flush(); logout(); })}, 'Quitter'));
+  root.append(h); paintGroupBtn();
+}
+function paintGroupBtn() {
+  const b = $('#btn-group'); if (!b || !S.sy) return;
+  const m = S.sy.group.members, on = m.filter(x => x.online || x.id === S.me.id).length;
+  b.textContent = m.length > 1 ? 'Projet · ' + m.length + ' membres (' + on + ' en ligne)' : 'Projet · seul';
+}
+function togglePane(side) {
+  if (narrow()) { ui['n' + side] = !ui['n' + side]; if (ui['n' + side]) ui[side === 'left' ? 'nright' : 'nleft'] = false; }
+  else { ui[side] = !ui[side]; LS.set('left', ui.left ? 1 : 0); LS.set('right', ui.right ? 1 : 0); }
+  render();
+}
+function split(side) {
+  const s = el('div', {class: 'split', role: 'separator', 'aria-orientation': 'vertical', tabindex: '0', 'aria-label': side === 'l' ? 'Redimensionner le panneau des journaux' : 'Redimensionner le panneau des ressources'});
+  const cur = () => { const p = $(side === 'l' ? '.pane.left' : '.pane.right'); return p ? p.offsetWidth : 0; };
+  const setW = w => {
+    const o = $(side === 'l' ? '.pane.right' : '.pane.left'), other = o ? o.offsetWidth : 0;
+    w = Math.round(Math.max(240, Math.min(Math.max(240, window.innerWidth - other - 380), w)));
+    ui[side === 'l' ? 'wl' : 'wr'] = w; $('#app').style.setProperty(side === 'l' ? '--wl' : '--wr', w + 'px');
+  };
+  const keep = () => { LS.set('wl', ui.wl); LS.set('wr', ui.wr); };
+  s.addEventListener('pointerdown', e => {
+    e.preventDefault(); const x0 = e.clientX, w0 = cur(); document.body.classList.add('resizing');
+    const mv = ev => setW(side === 'l' ? w0 + ev.clientX - x0 : w0 - (ev.clientX - x0));
+    const up = () => { window.removeEventListener('pointermove', mv); document.body.classList.remove('resizing'); keep(); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up, {once: true});
+  });
+  s.addEventListener('keydown', e => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); setW(cur() + (e.key === 'ArrowRight' ? 24 : -24) * (side === 'l' ? 1 : -1)); keep(); });
+  return s;
+}
+function partBar(root) {
+  const bar = el('nav', {class: 'partbar', 'aria-label': 'Parties du cours'});
+  const c = S.sy.course;
+  parts().forEach((p, i) => {
+    const b = el('button', {type: 'button', class: 'part' + (i === S.part && S.view !== 'done' ? ' cur' : '') + (isRO(i) ? ' ro' : ''), 'aria-current': i === S.part ? 'step' : null,
+      title: isRO(i) ? 'Lecture seule pendant la séance' : null, onclick: () => goPart(i, 0)},
+      el('span', {class: 'n'}, String(i + 1)), el('span', {class: 't'}, p.title), isRO(i) ? el('span', {class: 'tag'}, 'lecture seule') : null,
+      c.session_active && c.pace_part === i ? el('span', {class: 'tag pace'}, 'la classe est ici') : null);
+    bar.append(b);
+  });
+  root.append(bar);
+}
+function goPart(i, sc) {
+  if (i < 0 || i >= parts().length) return;
+  S.view = 'main'; S.part = i; const n = screensOf(parts()[i]).length;
+  S.screen = sc === 'last' ? n - 1 : Math.max(0, Math.min(sc || 0, n - 1));
+  S.focus = null; keepPos(); render(); syncSoon();
+}
+function paintChip() {
+  const c = $('#chip'); if (!c || !S.sy || S.part == null) return;
+  const co = S.sy.course, g = S.sy.group, p = curPart(), now = Date.now();
+  let cls = 'chip', txt;
+  if (g.extra_until && co.pace_part > g.ack_part && new Date(g.extra_until) > now) { cls += ' warn'; txt = 'Temps additionnel · reste ' + Math.max(1, Math.ceil((new Date(g.extra_until) - now) / 60000)) + ' min'; }
+  else if (!co.session_active) txt = (p.minutes ? p.minutes + ' min conseillées · ' : '') + 'hors séance';
+  else if (S.part === co.pace_part) {
+    const e = [...co.pace_log].reverse().find(x => x.part === co.pace_part), min = e ? Math.floor((now - new Date(e.at)) / 60000) : 0;
+    txt = min + ' min' + (p.minutes ? ' sur ' + p.minutes + ' conseillées' : ''); if (p.minutes && min > p.minutes) cls += ' warn';
+  } else txt = S.part > co.pace_part ? 'En avance · la classe est à la partie ' + (co.pace_part + 1) : 'La classe est à la partie ' + (co.pace_part + 1);
+  c.className = cls; c.textContent = txt;
+}
+
+/* ---------- Accueil ---------- */
+function welcome(root) {
+  const W = S.course.content.welcome || [], i = Math.min(S.welcome, W.length - 1), w = W[i];
+  const center = el('main', {class: 'center'}); root.append(el('div', {class: 'cols'}, center));
+  const scr = el('div', {class: 'screen'}, el('p', {class: 'eyebrow'}, 'Avant de commencer · ' + (i + 1) + ' sur ' + W.length), el('h1', null, w.t), el('div', {class: 'stmt big', html: stmt(w.html)}));
+  center.append(el('div', {class: 'center-scroll'}, scr));
+  const last = i === W.length - 1;
+  center.append(el('div', {class: 'nav'}, el('button', {class: 'btn', disabled: i === 0, onclick: () => { S.welcome = i - 1; render(); }}, 'Précédent'), el('span', {class: 'grow'}),
+    el('button', {class: 'btn ' + (last ? 'cta' : 'pri'), onclick: () => {
+      if (!last) { S.welcome = i + 1; return render(); }
+      LS.set('w:' + S.course.id + ':' + S.me.id, 1); goPart(Math.min(S.sy.course.session_active ? S.sy.course.pace_part : 0, parts().length - 1), 0);
+    }}, last ? 'Commencer' : 'Suivant')));
+}
+
+/* ---------- Écran d'une question ---------- */
+function screenView(center) {
+  const p = curPart(), scs = screensOf(p), sc = scs[S.screen], ro = isRO(S.part);
+  const scroll = el('div', {class: 'center-scroll'}), scr = el('div', {class: 'screen'});
+  center.append(scroll); scroll.append(scr);
+  if (ro) scr.append(el('p', {class: 'note warn'}, (S.sy.group.overrides || {})[p.id] === 'locked' ? 'Cette partie a été verrouillée par l\'enseignant : elle est en lecture seule.' : 'Partie en lecture seule pendant la séance. Elle redeviendra modifiable après la séance.'));
+  if (sc.sec) scr.append(el('p', {class: 'eyebrow'}, sc.sec));
+  for (const it of sc.items) {
+    if (it.t === 'text') scr.append(el('div', {class: 'stmt big', html: stmt(it.html)}));
+    else if (it.t === 'q') scr.append(qField(it, ro));
+    else if (it.t === 'table') scr.append(tableField(it, ro));
+    else if (it.t === 'upload') scr.append(uploadField(it, ro));
+  }
+  if (!sc.items.length) scr.append(el('p', {class: 'muted'}, 'Cette partie n\'a pas encore de contenu.'));
+  scr.addEventListener('focusin', e => { const t = e.target.closest('[data-item]'); const f = t ? t.dataset.item : null; if (f !== S.focus) { S.focus = f; syncSoon(); } });
+  scr.addEventListener('focusout', () => { setTimeout(() => { const a = document.activeElement, t = a && a.closest && a.closest('[data-item]'); if (!t && S.focus) { S.focus = null; flush(); syncSoon(); } }, 0); });
+  const lastPart = S.part === parts().length - 1, lastScr = S.screen === scs.length - 1;
+  const dots = el('div', {class: 'dots'});
+  scs.forEach((s, i) => dots.append(el('button', {type: 'button', class: 'dot' + (i === S.screen ? ' cur' : (s.main && screenDone(s.main) ? ' done' : '')), title: s.ref, 'aria-label': 'Écran ' + (i + 1) + ' : ' + s.ref, onclick: () => goPart(S.part, i)})));
+  center.append(el('div', {class: 'nav'},
+    el('button', {class: 'btn', disabled: S.part === 0 && S.screen === 0, onclick: () => S.screen > 0 ? goPart(S.part, S.screen - 1) : goPart(S.part - 1, 'last')}, 'Précédent'),
+    el('div', {class: 'nav-mid grow'}, dots, el('span', {class: 'count'}, (S.screen + 1) + ' / ' + scs.length)),
+    lastPart && lastScr
+      ? el('button', {class: 'btn cta', onclick: finishAsk}, S.sy.group.finished_at ? 'Récapitulatif' : 'Terminer l\'exercice')
+      : el('button', {class: 'btn pri', onclick: () => lastScr ? goPart(S.part + 1, 0) : goPart(S.part, S.screen + 1)}, lastScr ? 'Partie suivante' : 'Suivant')));
+}
+function screenDone(it) {
+  if (it.t === 'q') return filled(ansOf(it.id));
+  if (it.t === 'upload') return [...S.F.values()].some(f => f.item === it.id && !f.deleted);
+  if (it.t === 'table') { for (const [k, a] of S.A) if (k.startsWith(it.id + '/') && !k.endsWith('/_') && filled(a.v)) return true; return false; }
+  return false;
+}
+function lockBadge() { return el('span', {class: 'who', hidden: true}); }
+function qField(it, ro) {
+  const badge = lockBadge(), box = el('div', {class: 'qblock', 'data-item': it.id}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)}), badge));
+  const v = ansOf(it.id);
+  let node, setV, setRO;
+  if (it.kind === 'short' || it.kind === 'code') {
+    node = it.kind === 'short' ? el('input', {type: 'text', value: v || '', readonly: ro}) : el('textarea', {class: 'code', spellcheck: 'false', readonly: ro});
+    if (it.kind === 'code') node.value = v || '';
+    node.addEventListener('input', () => setAns(it.id, node.value));
+    setV = x => { if (document.activeElement !== node && node.value !== (x || '')) node.value = x || ''; };
+    setRO = r => { node.readOnly = r; };
+    box.append(node);
+  } else {
+    const [tb, ed] = makeRich(v, x => setAns(it.id, x), {ro, label: plain(it.label)});
+    node = ed; if (!ro) box.append(tb); box.append(ed);
+    setV = x => { const h = sanitize(x || ''); if (document.activeElement !== ed && ed.innerHTML !== h) ed.innerHTML = h; };
+    setRO = r => { ed.contentEditable = r ? 'false' : 'true'; };
+  }
+  FIELDS.set(it.id, {set: setV, lock(n) { badge.hidden = !n; badge.textContent = n ? n + ' écrit ici…' : ''; box.classList.toggle('held', !!n); if (document.activeElement !== node) setRO(ro || !!n); }});
+  return box;
+}
+function tableField(it, ro) {
+  const badge = lockBadge(), box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)}), badge));
+  const body = el('tbody'), foot = el('tfoot'), trs = new Map(); let ghost = null;
+  const key = (r, k) => it.id + '/' + r + '/' + k;
+  const hasSum = it.cols.some(c => c.sum);
+  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill'}, el('thead', null, el('tr', null, it.cols.map(c => el('th', {class: (c.kind === 'num' || c.kind === 'mul' ? 'n' : '') + (c.wide ? ' wide' : '')}, c.label)), ro ? null : el('th', {class: 'act'}))), body, hasSum ? foot : null)));
+  const empty = el('p', {class: 'muted small', hidden: true}, 'Aucune ligne.'); box.append(empty);
+  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); } } }
+  function calc(r) { const tr = trs.get(r); if (!tr) return; it.cols.filter(c => c.kind === 'mul').forEach(c => { const a = ansOf(key(r, c.of[0])), b = ansOf(key(r, c.of[1])); tr.querySelector('[data-calc="' + c.k + '"]').textContent = filled(a) && filled(b) ? fmtNum(num(a) * num(b)) : ''; }); }
+  function total() {
+    if (!hasSum) return; foot.textContent = '';
+    const rows = tableRows(ansOf, S.A.keys(), it.id), tr = el('tr');
+    it.cols.forEach((c, i) => { let t = ''; if (c.sum) { let s = 0; rows.forEach(r => { s += c.kind === 'mul' ? num(ansOf(key(r.rid, c.of[0]))) * num(ansOf(key(r.rid, c.of[1]))) : num(ansOf(key(r.rid, c.k))); }); t = fmtNum(s); } tr.append(el('td', {class: c.sum ? 'n sum' : ''}, i === 0 && !c.sum ? 'Total' : t)); });
+    if (!ro) tr.append(el('td')); foot.append(tr);
+  }
+  function addTr(r) {
+    const tr = el('tr'); trs.set(r, tr);
+    for (const c of it.cols) {
+      if (c.kind === 'mul') { tr.append(el('td', {class: 'fx n'}, el('span', {'data-calc': c.k}))); continue; }
+      const k = key(r, c.k); let inp;
+      if (c.kind === 'select') { inp = el('select', {disabled: ro, 'aria-label': c.label}, el('option', {value: ''}, '—'), (c.opts || []).map(o => el('option', {value: o}, o))); inp.value = ansOf(k) || ''; }
+      else { inp = el('textarea', {rows: 1, readonly: ro, 'aria-label': c.label, inputmode: c.kind === 'num' ? 'decimal' : null, class: c.kind === 'num' ? 'n' : null}); inp.value = ansOf(k) || ''; }
+      inp.dataset.item = k;
+      const on = () => { ensure(r); setAns(k, inp.value); if (inp.tagName === 'TEXTAREA') autoGrow(inp); calc(r); total(); };
+      inp.addEventListener('input', on); if (inp.tagName === 'SELECT') inp.addEventListener('change', on);
+      FIELDS.set(k, {set(x) { if (document.activeElement !== inp && inp.value !== (x || '')) { inp.value = x || ''; if (inp.tagName === 'TEXTAREA') autoGrow(inp); } },
+        lock(n) { inp.classList.toggle('held', !!n); inp.title = n ? n + ' écrit ici' : ''; if (document.activeElement !== inp) { if (inp.tagName === 'SELECT') inp.disabled = ro || !!n; else inp.readOnly = ro || !!n; } }});
+      tr.append(el('td', {class: c.wide ? 'wide' : ''}, inp));
+    }
+    if (!ro) tr.append(el('td', {class: 'act'}, el('button', {class: 'btn x', type: 'button', title: 'Supprimer la ligne', 'aria-label': 'Supprimer la ligne', onclick: () => {
+      if (r === ghost) return; const m = ansOf(key(r, '_')) || {o: Date.now()}; setAns(key(r, '_'), {o: m.o, d: true}); refresh();
+    }}, '✕')));
+    body.append(tr); calc(r);
+    requestAnimationFrame(() => tr.querySelectorAll('textarea').forEach(autoGrow));
+  }
+  function addGhost() { if (ro) return; ghost = rid(); addTr(ghost); }
+  function refresh() {
+    const rows = tableRows(ansOf, S.A.keys(), it.id), ids = new Set(rows.map(r => r.rid));
+    for (const [r, tr] of trs) if (!ids.has(r) && r !== ghost && !tr.contains(document.activeElement)) { tr.remove(); trs.delete(r); it.cols.forEach(c => FIELDS.delete(key(r, c.k))); }
+    for (const r of rows) if (!trs.has(r.rid)) addTr(r.rid);
+    if (ghost && trs.get(ghost) && body.lastChild !== trs.get(ghost)) body.append(trs.get(ghost));
+    for (const r of rows) calc(r.rid);
+    total(); empty.hidden = !(ro && !rows.length);
+  }
+  refresh(); addGhost(); total();
+  if (!ro) box.append(el('p', {class: 'muted small'}, 'Une nouvelle ligne s\'ajoute dès que vous écrivez dans la dernière.'));
+  TABLES.push({id: it.id, refresh});
+  return box;
+}
+const ACCEPT = '.zip,.xlsx,.xls,.xlsm,.csv,.ods,.pptx,.ppt,.odp,.pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.docx';
+function uploadField(it, ro) {
+  const list = el('div', {class: 'files'}), state = el('span', {class: 'small muted'});
+  const input = el('input', {type: 'file', accept: ACCEPT, multiple: true, hidden: true, onchange: async () => {
+    const fs = [...input.files]; input.value = '';
+    for (const f of fs) {
+      state.textContent = 'Envoi de ' + f.name + '…';
+      try {
+        const t = await api('cours_upload_start', {p_token: S.tok, p_item: it.id, p_name: f.name, p_size: f.size, p_mime: f.type || ''});
+        await putFile(t.path, f);
+        await api('cours_upload_done', {p_token: S.tok, p_file: t.id});
+        state.textContent = '';
+      } catch (e) { state.textContent = ''; toast(f.name + ' : ' + e.message, 'err'); }
+    }
+    await syncOnce(); refresh();
+  }});
+  const box = el('div', {class: 'qblock'}, el('div', {class: 'qlabel', html: stmt(it.label)}), list,
+    ro ? null : el('div', {class: 'row'}, el('button', {class: 'btn', type: 'button', onclick: () => input.click()}, 'Déposer un fichier'), state, input),
+    ro ? null : el('p', {class: 'muted small'}, 'Formats acceptés : zip, Excel, PowerPoint, PDF, image. 50 Mo au plus par fichier. Un fichier retiré reste conservé dans l\'historique.'));
+  function refresh() {
+    list.textContent = '';
+    const fs = [...S.F.values()].filter(f => f.item === it.id && !f.deleted).sort((a, b) => a.at < b.at ? -1 : 1);
+    if (!fs.length) list.append(el('p', {class: 'muted small'}, 'Aucun fichier déposé.'));
+    fs.forEach(f => list.append(el('div', {class: 'file'}, el('button', {class: 'btn quiet', type: 'button', onclick: () => download(f)}, f.name), el('span', {class: 'small muted grow'}, fmtSize(f.size) + ' · ' + nameOf(f.by, true) + ' · ' + fmtTime(f.at)),
+      ro ? null : el('button', {class: 'btn sm', type: 'button', onclick: () => confirmBox('Retirer ce fichier ?', f.name + ' ne fera plus partie du rendu. Il reste conservé dans l\'historique.', 'Retirer', async () => { await api('cours_file_delete', {p_token: S.tok, p_file: f.id}); await syncOnce(); refresh(); })}, 'Retirer'))));
+  }
+  refresh(); UPLOADS.push({id: it.id, refresh});
+  return box;
+}
+async function download(f) {
+  try { toast('Téléchargement de ' + f.name + '…'); const t = await api('cours_file_ticket', {p_token: S.tok, p_file: f.id}); saveBlob(await getBlob(t.path), f.name); }
+  catch (e) { toast(e.message, 'err'); }
+}
+function paintPresence() {
+  if (!S.sy) return;
+  const locks = new Map();
+  for (const m of S.sy.group.members) if (m.id !== S.me.id && m.editing) locks.set(m.editing, m.prenom);
+  for (const [id, f] of FIELDS) f.lock(locks.get(id) || null);
+}
+
+/* ---------- Fin d'exercice ---------- */
+function finishAsk() {
+  if (S.sy.group.finished_at) { S.view = 'done'; return render(); }
+  confirmBox('Terminer l\'exercice ?', 'L\'enseignant verra votre projet comme terminé. Vous pourrez encore modifier vos réponses tant que le cours est en ligne.', 'Terminer', async () => { await flush(); await api('cours_finish', {p_token: S.tok, p_done: true}); S.view = 'done'; await syncOnce(); render(); });
+}
+function doneScreen(center) {
+  const scr = el('div', {class: 'screen top'}, el('h1', null, 'Exercice terminé'), el('p', {class: 'big'}, 'Merci. Voici ce que contient votre rendu. Vous pouvez encore le modifier tant que le cours est en ligne.'));
+  const tb = el('tbody');
+  parts().forEach((p, i) => { const its = p.items.filter(x => ANSWERABLE.includes(x.t)), ok = its.filter(screenDone).length; tb.append(el('tr', null, el('td', null, (i + 1) + '. ' + p.title), el('td', {class: 'n'}, ok + ' / ' + its.length), el('td', null, el('button', {class: 'btn sm', onclick: () => goPart(i, 0)}, 'Ouvrir')))); });
+  scr.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, el('th', null, 'Partie'), el('th', {class: 'n'}, 'Réponses remplies'), el('th'))), tb)));
+  scr.append(el('div', {class: 'row'}, el('button', {class: 'btn', onclick: async () => { await api('cours_finish', {p_token: S.tok, p_done: false}); await syncOnce(); goPart(S.part, S.screen); }}, 'Rouvrir l\'exercice')));
+  center.append(el('div', {class: 'center-scroll'}, scr));
+}
+
+/* ---------- Verrouillage au rythme du cours ---------- */
+function checkLock() {
+  const g = S.sy.group, co = S.sy.course;
+  if (!g.locked) { if (lockClose) { lockClose(); lockClose = null; } return; }
+  if (lockClose || S.part == null) return;
+  const target = parts()[co.pace_part], left = 20 - (g.extra_used || 0);
+  flush();
+  lockClose = modal((b, close) => {
+    const err = el('p', {class: 'note err', hidden: true});
+    const ack = async () => { try { await flush(); await api('cours_ack', {p_token: S.tok}); close(); lockClose = null; S.sy.group.locked = false; if (S.part < co.pace_part) goPart(co.pace_part, 0); else syncSoon(); } catch (e) { err.hidden = false; err.textContent = e.message; } };
+    b.append(el('p', {class: 'eyebrow'}, 'Le cours avance'), el('h2', null, 'La classe passe à la partie ' + (co.pace_part + 1) + (target ? ' : ' + target.title : '')),
+      el('p', null, S.part < co.pace_part ? 'Enregistrez où vous en êtes et passez à la suite avec la classe. Les parties précédentes passent en lecture seule jusqu\'à la fin de la séance.' : 'Vous êtes déjà à cette partie ou plus loin. Les parties précédentes passent en lecture seule jusqu\'à la fin de la séance.'), err);
+    const row = el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: ack}, S.part < co.pace_part ? 'Passer à la partie ' + (co.pace_part + 1) : 'Continuer'));
+    b.append(row);
+    if (left > 0) {
+      const form = el('div', {class: 'stack', hidden: true});
+      const mins = el('select', {'aria-label': 'Minutes demandées'}, [5, 10, 15, 20].filter(m => m <= left).map(m => el('option', {value: m}, m + ' minutes')));
+      if (!mins.options.length) mins.append(el('option', {value: left}, left + ' minutes'));
+      const why = el('textarea', {placeholder: 'Pourquoi avez-vous besoin de ce temps, et qu\'allez-vous en faire ?', 'aria-label': 'Justification'});
+      form.append(el('label', {class: 'f'}, 'Temps demandé (il vous reste ' + left + ' min sur 20 pour ce passage)', mins), el('label', {class: 'f'}, 'Justification', why),
+        el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: async () => { try { await api('cours_extra', {p_token: S.tok, p_minutes: +mins.value, p_why: why.value}); close(); lockClose = null; S.sy.group.locked = false; toast('Temps additionnel accordé : ' + mins.value + ' minutes.'); syncSoon(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Obtenir ce temps')));
+      row.append(el('button', {class: 'btn', onclick: () => { form.hidden = false; why.focus(); }}, 'Demander du temps'));
+      b.append(form);
+    } else b.append(el('p', {class: 'small muted'}, 'Vous avez utilisé vos 20 minutes de temps additionnel pour ce passage.'));
+  }, {sticky: true, cls: 'lock'});
+}
+
+/* ---------- Projet à plusieurs ---------- */
+function checkInvites() {
+  if (invClose) return;
+  const inv = S.sy.invites_in.find(i => !seenInv.has(i.id)); if (!inv) return;
+  invClose = modal((b, close) => {
+    const done = () => { seenInv.add(inv.id); close(); };
+    const err = el('p', {class: 'note err', hidden: true});
+    b.append(el('h2', null, inv.from + ' vous invite dans son projet'),
+      el('p', null, 'En acceptant, vous travaillerez dans les réponses de son projet : un seul rendu pour le groupe. Ce que vous avez déjà écrit de votre côté est conservé, mais mis de côté.'), err,
+      el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: async () => { try { await flush(); await api('cours_invite_answer', {p_token: S.tok, p_invite: inv.id, p_accept: true}); done(); await syncOnce(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Rejoindre le projet'),
+        el('button', {class: 'btn', onclick: async () => { try { await api('cours_invite_answer', {p_token: S.tok, p_invite: inv.id, p_accept: false}); } catch (e) {} done(); }}, 'Refuser')));
+  }, {sticky: true, onclose: () => { invClose = null; setTimeout(checkInvites, 300); }});
+}
+async function groupModal() {
+  if (!S.boot || !S.boot.students) { try { S.boot = await api('cours_boot'); } catch (e) {} }
+  modal((b, close) => {
+    const paint = () => {
+      b.textContent = '';
+      const g = S.sy.group, me = S.sy.me, err = el('p', {class: 'note err', hidden: true});
+      const run = fn => async () => { try { await fn(); await syncOnce(); paint(); } catch (e) { err.hidden = false; err.textContent = e.message; } };
+      b.append(el('h2', null, 'Mon projet'), el('p', {class: 'muted'}, g.members.length > 1 ? 'Un seul rendu pour le projet : tous les membres écrivent dans les mêmes réponses.' : 'Vous travaillez seul. Vous pouvez inviter 1 à 2 camarades : ils écriront avec vous dans les mêmes réponses.'));
+      g.members.forEach(m => b.append(el('div', {class: 'file'}, el('span', {class: 'dot-on' + (m.online || m.id === S.me.id ? ' on' : '')}), el('b', {class: 'grow'}, m.prenom + ' ' + m.nom + (m.id === S.me.id ? ' (vous)' : '')),
+        el('span', {class: 'pill'}, m.role === 'principal' ? 'Principal' : 'Invité'),
+        me.role === 'principal' && m.role === 'invite' ? el('button', {class: 'btn sm', onclick: run(() => api('cours_group_remove', {p_token: S.tok, p_student: m.id}))}, 'Retirer') : null)));
+      S.sy.invites_out.forEach(i => b.append(el('div', {class: 'file'}, el('span', {class: 'grow muted'}, i.to + ' · invitation envoyée, en attente'), me.role === 'principal' ? el('button', {class: 'btn sm', onclick: run(() => api('cours_invite_cancel', {p_token: S.tok, p_invite: i.id}))}, 'Annuler') : null)));
+      if (me.role === 'principal' && g.members.length + S.sy.invites_out.length < 3) {
+        const taken = new Set([...g.members.map(m => m.id), ...S.sy.invites_out.map(i => i.to_id)]);
+        const sel = el('select', {'aria-label': 'Camarade à inviter'}, el('option', {value: ''}, 'Choisir un camarade…'), ((S.boot && S.boot.students) || []).filter(s => !taken.has(s.id)).map(s => el('option', {value: s.id}, s.nom + ' ' + s.prenom)));
+        b.append(el('div', {class: 'row'}, el('div', {class: 'grow'}, sel), el('button', {class: 'btn pri', onclick: run(async () => { if (sel.value) await api('cours_invite', {p_token: S.tok, p_to: sel.value}); })}, 'Inviter')));
+      }
+      if (me.role === 'invite') b.append(el('div', {class: 'row'}, el('button', {class: 'btn danger', onclick: () => confirmBox('Quitter ce projet ?', 'Vous retrouverez votre projet personnel, avec ce que vous y aviez écrit. Le projet du groupe reste à ses autres membres.', 'Quitter le projet', async () => { await flush(); await api('cours_group_leave', {p_token: S.tok}); close(); await syncOnce(); }, true)}, 'Quitter ce projet')));
+      b.append(err, el('div', {class: 'row'}, el('button', {class: 'btn', onclick: close}, 'Fermer')));
+    };
+    paint();
+  });
+}
+
+/* ---------- Journaux ---------- */
+function curRef() { const p = curPart(); if (!p) return ''; const sc = screensOf(p)[S.screen]; return 'Partie ' + (S.part + 1) + (sc ? ' · ' + sc.ref : ''); }
+function journalPane() {
+  const pane = el('aside', {class: 'pane left', 'aria-label': 'Journaux'});
+  const tabs = el('div', {class: 'tabs'}, el('button', {type: 'button', 'aria-pressed': String(journalTab === 'bord'), onclick: () => { journalTab = 'bord'; render(); }}, 'Journal de bord'), el('button', {type: 'button', 'aria-pressed': String(journalTab === 'ia'), onclick: () => { journalTab = 'ia'; render(); }}, 'Usage de l\'IA'));
+  pane.append(el('div', {class: 'pane-h'}, tabs, el('span', {class: 'grow'}), narrow() ? el('button', {class: 'btn x', 'aria-label': 'Fermer', onclick: () => togglePane('left')}, '✕') : null));
+  const body = el('div', {class: 'pane-b'}), list = el('div', {class: 'stack', id: 'jlist'});
+  pane.append(body);
+  const add = async (kind, data, after) => { try { const p = curPart(); await api('cours_journal_add', {p_token: S.tok, p_kind: kind, p_part: p ? p.id : null, p_ref: curRef(), p_data: data}); after(); await syncOnce(); } catch (e) { toast(e.message, 'err'); } };
+  if (journalTab === 'bord') {
+    const ta = el('textarea', {placeholder: 'Ce que vous faites, ce qui bloque, vos décisions…', 'aria-label': 'Nouvelle note du journal de bord', style: 'min-height:84px'});
+    const send = () => { const t = ta.value.trim(); if (t) add('bord', {text: t}, () => { ta.value = ''; }); };
+    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); } });
+    body.append(el('p', {class: 'small muted'}, 'Notes horodatées, partagées par le projet. Tenez-le au fil de l\'eau.'), list, el('div', {class: 'stack jform'}, ta, el('div', {class: 'row'}, el('button', {class: 'btn pri sm', onclick: send}, 'Ajouter la note'), el('span', {class: 'small muted'}, 'Ctrl + Entrée'))));
+  } else {
+    const f = k => el('textarea', {rows: 2, 'data-k': k, style: 'min-height:44px'}), tool = el('input', {type: 'text', placeholder: 'Claude, ChatGPT, Copilot…'}), ask = f('ask'), kept = f('kept'), check = f('check');
+    body.append(el('p', {class: 'small muted'}, 'À chaque usage d\'un outil d\'IA. La question concernée se remplit toute seule.'), list,
+      el('div', {class: 'stack jform'}, el('label', {class: 'f'}, 'Outil', tool), el('label', {class: 'f'}, 'Votre demande', ask), el('label', {class: 'f'}, 'Ce que vous en avez gardé', kept), el('label', {class: 'f'}, 'Comment vous l\'avez vérifié', check),
+        el('div', {class: 'row'}, el('button', {class: 'btn pri sm', onclick: () => { if (!tool.value.trim() || !ask.value.trim()) return toast('Indiquez au moins l\'outil et votre demande.', 'err'); add('ia', {tool: tool.value.trim(), ask: ask.value.trim(), kept: kept.value.trim(), check: check.value.trim()}, () => { tool.value = ask.value = kept.value = check.value = ''; }); }}, 'Déclarer cet usage'))));
+  }
+  paintJournal(list);
+  return pane;
+}
+function journalEntry(j, who) {
+  const meta = el('div', {class: 'meta'}, fmtTime(j.at) + ' · ' + who + (j.ref ? ' · ' + j.ref : ''));
+  if (j.kind === 'bord') return el('div', {class: 'entry'}, meta, el('div', {style: 'white-space:pre-wrap;overflow-wrap:anywhere'}, j.data.text || ''));
+  return el('div', {class: 'entry'}, meta, el('dl', {style: 'margin:0'}, el('dt', null, 'Outil'), el('dd', null, j.data.tool || ''), el('dt', null, 'Demande'), el('dd', null, j.data.ask || ''), el('dt', null, 'Gardé'), el('dd', null, j.data.kept || '—'), el('dt', null, 'Vérification'), el('dd', null, j.data.check || '—')));
+}
+function paintJournal(list) {
+  list = list || $('#jlist'); if (!list) return;
+  const es = S.J.filter(j => j.kind === journalTab).sort((a, b) => a.id - b.id);
+  list.textContent = '';
+  if (!es.length) list.append(el('p', {class: 'muted small'}, journalTab === 'bord' ? 'Aucune note pour le moment.' : 'Aucun usage déclaré pour le moment.'));
+  es.forEach(j => list.append(journalEntry(j, nameOf(j.by, true))));
+  const pb = list.closest('.pane-b'); if (pb) requestAnimationFrame(() => { pb.scrollTop = pb.scrollHeight; });
+}
+
+/* ---------- Ressources ---------- */
+function blobUrl(f, ticketFn) {
+  if (!blobCache.has(f.id)) blobCache.set(f.id, (async () => { const t = await ticketFn(f); return URL.createObjectURL(await getBlob(t.path)); })().catch(e => { blobCache.delete(f.id); throw e; }));
+  return blobCache.get(f.id);
+}
+function resPane() {
+  const p = curPart(), pane = el('aside', {class: 'pane right', 'aria-label': 'Ressources'});
+  pane.append(el('div', {class: 'pane-h'}, el('h3', {class: 'grow'}, 'Ressources'), narrow() ? el('button', {class: 'btn x', 'aria-label': 'Fermer', onclick: () => togglePane('right')}, '✕') : null));
+  const body = el('div', {class: 'pane-b'}); pane.append(body);
+  const res = p.items.filter(it => it.t === 'res'), files = (S.course.resources || []).filter(f => !f.part || f.part === p.id);
+  if (!res.length && !files.length) body.append(el('p', {class: 'muted small'}, 'Pas de ressource pour cette partie.'));
+  res.forEach(r => body.append(el('div', {class: 'res'}, r.title ? el('h3', null, r.title) : null, el('div', {class: 'res-body stmt', html: stmt(r.html)}))));
+  const ticket = f => api('cours_file_ticket', {p_token: S.tok, p_file: f.id});
+  files.forEach(f => {
+    const box = el('div', {class: 'res'}, el('div', {class: 'row'}, el('b', {class: 'grow', style: 'overflow-wrap:anywhere'}, f.name), el('button', {class: 'btn sm', onclick: () => download(f)}, 'Télécharger')), el('span', {class: 'small muted'}, fmtSize(f.size)));
+    if (/^image\//.test(f.mime || '')) {
+      const img = el('img', {alt: f.name}), holder = el('div', {class: 'res-body zoomable', onclick: () => modal((b, close) => b.append(el('div', {class: 'zoom-area'}, el('img', {src: img.src, alt: f.name, style: 'max-width:100%;display:block'})), el('div', {class: 'row'}, el('button', {class: 'btn', onclick: close}, 'Fermer'))), {wide: true})}, img);
+      box.append(holder); blobUrl(f, ticket).then(u => { img.src = u; }).catch(() => holder.remove());
+    }
+    body.append(box);
+  });
+  return pane;
+}
+window.addEventListener('resize', (() => { let t, w = window.innerWidth; return () => { clearTimeout(t); t = setTimeout(() => { if ((w < 900) !== (window.innerWidth < 900) && S.view === 'main' && !document.activeElement.closest('[data-item]')) render(); w = window.innerWidth; }, 200); }; })());
+setInterval(() => { if (S.view === 'main') paintChip(); }, 20000);
+
+/* ============ Backoffice enseignant ============ */
+const AD = {tok: LS.get('atok', null), st: null, sel: LS.get('acourse', null), tab: 'promo', contents: {}, open: null, timer: null, err: '', filter: '', n: 0};
+const aapi = (fn, args) => api(fn, {p_token: AD.tok, ...(args || {})});
+const aset = (action, args) => aapi('cours_admin_set', {p_action: action, p_args: args || {}});
+const aticket = f => aapi('cours_admin_file_ticket', {p_file: f.id});
+async function adownload(f) { try { toast('Téléchargement de ' + f.name + '…'); const t = await aticket(f); saveBlob(await getBlob(t.path), f.name); } catch (e) { toast(e.message, 'err'); } }
+
+async function adminStart() {
+  if (!AD.tok) return adminLogin();
+  $('#app').textContent = ''; $('#app').append(el('div', {class: 'wrap'}, el('p', {class: 'muted'}, 'Chargement…')));
+  await adminPoll(true);
+}
+function adminLogin(msg) {
+  clearTimeout(AD.timer); AD.tok = null; LS.set('atok', null);
+  const root = $('#app'); root.className = ''; root.textContent = ''; document.querySelectorAll('.drawer,.veil').forEach(x => x.remove());
+  const err = el('p', {class: 'note err', hidden: !msg}, msg || ''), code = el('input', {type: 'password', autocomplete: 'off', placeholder: 'Code enseignant', 'aria-label': 'Code enseignant'});
+  const go = el('button', {class: 'btn cta', type: 'submit'}, 'Entrer');
+  root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace étudiant')),
+    el('form', {class: 'stack', style: 'margin-top:8vh;max-width:420px', onsubmit: async e => {
+      e.preventDefault(); go.disabled = true; err.hidden = true;
+      try { const r = await api('cours_admin_login', {p_code: code.value}); if (!r.ok) throw new Error(r.error); AD.tok = r.token; LS.set('atok', r.token); adminStart(); }
+      catch (e2) { err.hidden = false; err.textContent = e2.message; go.disabled = false; }
+    }}, el('p', {class: 'eyebrow'}, 'Backoffice'), el('h1', null, 'Espace enseignant'), code, err, el('div', {class: 'row'}, go))));
+  code.focus();
+}
+async function adminPoll(first) {
+  clearTimeout(AD.timer);
+  try {
+    const st = await aapi('cours_admin_state', {p_course: AD.sel});
+    AD.st = st; AD.err = ''; AD.n++;
+    const c = st.courses.find(x => x.id === st.course_id);
+    if (c && (!AD.contents[c.id] || AD.contents[c.id].content_at !== c.updated_at)) AD.contents[c.id] = await aapi('cours_admin_course', {p_course: c.id});
+    if (first || !$('.adm')) adminRender(); else adminPaint();
+    if (AD.open && AD.n % 2 === 0) drawerLoad(false);
+  } catch (e) {
+    if (e.code === 'AUTH') return adminLogin('Session expirée : reconnectez-vous.');
+    AD.err = e.message; const n = $('#adm-err'); if (n) { n.hidden = false; n.textContent = e.message; } else if (first) return adminLogin(e.message);
+  }
+  AD.timer = setTimeout(() => adminPoll(false), document.hidden ? 12000 : 3000);
+}
+const aCourse = () => AD.st.courses.find(x => x.id === AD.st.course_id) || null;
+const aContent = id => (AD.contents[id || AD.st.course_id] || {content: {parts: []}, resources: []});
+const aParts = id => aContent(id).content.parts || [];
+function aStatus(u, g) {
+  if (g && g.finished_at) return ['Exercice terminé', 'ok'];
+  if (u.group_id && g && g.started_at) return ['Exercice en cours', 'run'];
+  if (u.group_id) return ['Connecté', ''];
+  if (u.login_started_at && Date.now() - new Date(u.login_started_at) < 15 * 60000) return ['Login en cours', 'warn'];
+  return ['Jamais connecté', 'off'];
+}
+function aProgress(g, courseId) {
+  const its = itemsOf(aContent(courseId).content); if (!g || !its.length) return 0;
+  const done = new Set([...(g.answered || []), ...(g.files || [])]);
+  return Math.round(100 * its.filter(i => done.has(i.id)).length / its.length);
+}
+function aPaceState(g, c) {
+  if (!c || !c.session_active || !g) return null;
+  if (c.pace_part <= g.ack_part) return ['À jour', 'ok'];
+  const ex = (g.extras || []).filter(e => e.pace === c.pace_part), until = ex.length ? Math.max(...ex.map(e => +new Date(e.until))) : 0;
+  if (until > Date.now()) return ['Temps + jusqu\'à ' + fmtTime(until), 'warn'];
+  return ['Écran de passage affiché', 'warn'];
+}
+
+function adminRender() {
+  const root = $('#app'); root.className = ''; root.textContent = '';
+  const tabs = el('div', {class: 'tabs'}, [['promo', 'Promo'], ['cours', 'Cours et ressources'], ['codes', 'Codes et étudiants']].map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: () => { AD.tab = k; adminRender(); }}, l)));
+  root.append(el('div', {class: 'adm'},
+    el('header', {class: 'hdr'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, 'Backoffice · ' + (AD.st.admin || '')), el('b', {id: 'adm-title'})),
+      el('div', {class: 'hdr-tools'}, tabs, el('button', {class: 'btn sm', onclick: () => { api('cours_logout', {p_token: AD.tok}).catch(() => {}); adminLogin(); }}, 'Quitter'))),
+    el('p', {class: 'note err', id: 'adm-err', hidden: true}),
+    el('section', {class: 'ctl', id: 'adm-ctl'}), el('section', {id: 'adm-body', class: 'adm-body'})));
+  adminPaint(true);
+}
+function adminPaint(force) {
+  const st = AD.st, c = aCourse();
+  $('#adm-title').textContent = c ? c.title : 'Aucun cours';
+  const er = $('#adm-err'); if (er) er.hidden = !AD.err;
+  const busy = n => n && n.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if (force || !busy($('#adm-ctl'))) paintCtl();
+  const body = $('#adm-body');
+  if (AD.tab === 'promo') { if (force || !busy(body)) paintPromo(body); }
+  else if (force) (AD.tab === 'cours' ? paintCours : paintCodes)(body);
+}
+function paintCtl() {
+  const st = AD.st, c = aCourse(), box = $('#adm-ctl'); box.textContent = '';
+  const act = (label, cls, fn) => el('button', {class: 'btn sm ' + (cls || ''), onclick: async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } }}, label);
+  const ask = (label, cls, title, text, ok, fn) => el('button', {class: 'btn sm ' + (cls || ''), onclick: () => confirmBox(title, text, ok, async () => { await fn(); await adminPoll(false); adminPaint(true); })}, label);
+  // Plateforme
+  box.append(el('div', {class: 'ctl-b'}, el('p', {class: 'eyebrow'}, 'Plateforme'), el('div', {class: 'row'}, el('span', {class: 'pill ' + (st.settings.paused ? 'warn' : 'ok')}, st.settings.paused ? 'En pause' : 'En ligne'),
+    st.settings.paused ? act('Rouvrir l\'accès', 'pri', () => aset('pause', {paused: false})) : ask('Mettre en pause', '', 'Mettre la plateforme en pause ?', 'Tous les étudiants voient un écran d\'attente. Rien n\'est perdu.', 'Mettre en pause', () => aset('pause', {paused: true})))));
+  // Cours
+  const sel = el('select', {'aria-label': 'Cours affiché', onchange: async () => { AD.sel = sel.value; LS.set('acourse', AD.sel); closeDrawer(); await adminPoll(false); adminRender(); }}, st.courses.map(x => el('option', {value: x.id, selected: x.id === st.course_id}, x.title + (x.id === st.settings.published_course ? ' (publié)' : ''))));
+  const pub = c && st.settings.published_course === c.id;
+  box.append(el('div', {class: 'ctl-b'}, el('p', {class: 'eyebrow'}, 'Cours'), el('div', {class: 'row'}, st.courses.length ? el('div', {style: 'min-width:220px'}, sel) : el('span', {class: 'muted'}, 'Aucun cours : créez-en un dans « Cours et ressources ».'),
+    c ? el('span', {class: 'pill ' + (pub ? 'ok' : '')}, pub ? 'Publié' : 'Non publié') : null,
+    c && !pub ? ask('Publier ce cours', 'pri', 'Publier « ' + c.title + ' » ?', st.settings.published_course ? 'Il remplace le cours actuellement publié : un seul cours est ouvert à la fois.' : 'Les étudiants pourront se connecter et y travailler.', 'Publier', () => aset('publish', {course: c.id})) : null,
+    c && pub ? ask('Dépublier', '', 'Dépublier ce cours ?', 'Les étudiants n\'y auront plus accès. Leurs réponses sont conservées.', 'Dépublier', () => aset('publish', {course: null})) : null)));
+  if (!c) return;
+  // Séance et rythme
+  const ps = aParts();
+  box.append(el('div', {class: 'ctl-b'}, el('p', {class: 'eyebrow'}, 'Séance'), el('div', {class: 'row'}, el('span', {class: 'pill ' + (c.session_active ? 'run' : '')}, c.session_active ? 'Séance en cours' : 'Hors séance'),
+    c.session_active ? ask('Terminer la séance', '', 'Terminer la séance ?', 'Les parties en lecture seule redeviennent modifiables et l\'écran de passage disparaît.', 'Terminer la séance', () => aset('session', {course: c.id, active: false}))
+      : act('Démarrer la séance', 'pri', () => aset('session', {course: c.id, active: true})))));
+  const pace = el('div', {class: 'row'});
+  ps.forEach((p, i) => pace.append(el('button', {class: 'btn sm pacebtn' + (i === c.pace_part ? ' pri' : ''), title: p.title, disabled: i === c.pace_part, onclick: () => confirmBox('Faire passer la classe à la partie ' + (i + 1) + ' ?', '« ' + p.title + ' ». ' + (i > c.pace_part ? 'Tous les étudiants en retard voient l\'écran de passage. Ils peuvent demander jusqu\'à 20 minutes de temps additionnel en le justifiant.' : 'Retour en arrière : les parties suivantes redeviennent modifiables.'), 'Passer à la partie ' + (i + 1), async () => { await aset('pace', {course: c.id, part: i}); await adminPoll(false); adminPaint(true); })}, (i + 1) + ' · ' + p.title)));
+  const e = [...(c.pace_log || [])].reverse().find(x => x.part === c.pace_part);
+  box.append(el('div', {class: 'ctl-b grow'}, el('p', {class: 'eyebrow'}, 'Rythme : la classe est à la partie ' + (c.pace_part + 1) + (c.session_active && e ? ' depuis ' + fmtTime(e.at) + (ps[c.pace_part] && ps[c.pace_part].minutes ? ' (' + ps[c.pace_part].minutes + ' min conseillées)' : '') : '')), pace));
+}
+function avatar(u) {
+  const a = el('span', {class: 'ava'}, (u.prenom[0] || '') + (u.nom[0] || ''));
+  if (u.photo) blobUrl({id: u.photo}, aticket).then(src => { a.textContent = ''; a.append(el('img', {src, alt: ''})); }).catch(() => {});
+  return a;
+}
+function paintPromo(body) {
+  const st = AD.st, c = aCourse(), G = new Map(st.groups.map(g => [g.id, g])), U = new Map(st.students.map(u => [u.id, u]));
+  const keepScroll = window.scrollY; body.textContent = '';
+  const act = st.students.filter(u => u.active);
+  const count = k => act.filter(u => aStatus(u, G.get(u.group_id))[0] === k).length;
+  const waiting = c && c.session_active ? st.groups.filter(g => c.pace_part > g.ack_part).length : 0;
+  const multi = st.groups.filter(g => act.filter(u => u.group_id === g.id).length > 1).length;
+  body.append(el('div', {class: 'kpis'}, [[act.filter(u => u.online).length + ' / ' + act.length, 'en ligne maintenant'], [count('Jamais connecté'), 'jamais connectés'], [count('Login en cours'), 'login en cours'], [count('Connecté'), 'connectés, pas commencé'], [count('Exercice en cours'), 'exercice en cours'], [count('Exercice terminé'), 'exercice terminé'], [multi, 'projets à plusieurs'], [waiting, 'projets en retard sur le rythme']].map(([v, l]) => el('div', {class: 'kpi'}, el('b', null, String(v)), el('span', {class: 'small muted'}, l)))));
+  const search = el('input', {type: 'text', placeholder: 'Filtrer par nom', value: AD.filter, 'aria-label': 'Filtrer par nom', style: 'max-width:260px', oninput: () => { AD.filter = search.value; rows(); }});
+  body.append(el('div', {class: 'row'}, search, el('span', {class: 'small muted'}, 'Cliquez sur une ligne pour voir le détail. La vue se met à jour toutes les 3 secondes.')));
+  const tb = el('tbody');
+  body.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data promo'}, el('thead', null, el('tr', null, ['Étudiant', 'Statut', 'Projet', 'Position', 'Progression', 'Rythme', 'Remarque pour ce cours'].map(h => el('th', null, h)))), tb)));
+  function rows() {
+    tb.textContent = ''; const q = AD.filter.trim().toLowerCase();
+    act.filter(u => !q || (u.nom + ' ' + u.prenom).toLowerCase().includes(q)).forEach(u => {
+      const g = G.get(u.group_id), [sl, sc] = aStatus(u, g), mates = g ? act.filter(x => x.group_id === g.id && x.id !== u.id) : [], owner = g ? U.get(g.owner_id) : null;
+      const pi = aParts().findIndex(p => p.id === u.part), pr = aProgress(g), ps = aPaceState(g, c);
+      const rem = el('input', {type: 'text', value: u.remark || '', placeholder: 'Ajouter une remarque', 'aria-label': 'Remarque pour ' + u.prenom + ' ' + u.nom, onclick: e => e.stopPropagation(),
+        onchange: async () => { try { await aset('remark', {course: st.course_id, student: u.id, body: rem.value}); u.remark = rem.value; toast('Remarque enregistrée.'); } catch (e) { toast(e.message, 'err'); } }});
+      tb.append(el('tr', {class: 'rowlink' + (AD.open && AD.open.sid === u.id ? ' sel' : ''), tabindex: '0', onclick: () => openDrawer(u.id), onkeydown: e => { if (e.key === 'Enter' && e.target.tagName === 'TR') openDrawer(u.id); }},
+        el('td', null, el('div', {class: 'who-c'}, avatar(u), el('div', null, el('b', null, u.nom + ' ' + u.prenom), el('div', {class: 'small muted'}, [u.groupe, u.note].filter(Boolean).join(' · '))))),
+        el('td', null, el('span', {class: 'dot-on' + (u.online ? ' on' : '')}), el('span', {class: 'pill ' + sc}, sl)),
+        el('td', null, !g ? '—' : el('div', null, el('span', {class: 'pill'}, u.role === 'invite' ? 'Invité' : 'Principal'), mates.length ? el('div', {class: 'small muted'}, u.role === 'invite' && owner ? 'Projet de ' + owner.prenom + ' ' + owner.nom + (mates.length > 1 ? ' (+' + (mates.length - 1) + ')' : '') : 'Avec ' + mates.map(x => x.prenom).join(', ')) : el('div', {class: 'small muted'}, 'Seul'))),
+        el('td', null, pi >= 0 ? 'Partie ' + (pi + 1) + (u.screen != null ? ' · écran ' + (u.screen + 1) : '') : '—', u.editing ? el('div', {class: 'small muted'}, 'écrit en ce moment') : null),
+        el('td', null, el('div', {class: 'bar', title: pr + ' %'}, el('i', {style: 'width:' + pr + '%'})), el('span', {class: 'small muted'}, pr + ' %')),
+        el('td', null, ps ? el('span', {class: 'pill ' + ps[1]}, ps[0]) : '—', g && (g.extras || []).length ? el('div', {class: 'small muted'}, g.extras.reduce((s, e) => s + e.minutes, 0) + ' min de temps + demandées') : null),
+        el('td', {style: 'min-width:220px'}, rem)));
+    });
+    if (!tb.children.length) tb.append(el('tr', null, el('td', {colspan: 7, class: 'muted'}, 'Aucun étudiant.')));
+  }
+  rows(); window.scrollTo(0, keepScroll);
+}
+
+/* ---------- Panneau de détail d'un étudiant ---------- */
+function closeDrawer() { AD.open = null; document.querySelectorAll('.drawer').forEach(x => x.remove()); document.querySelectorAll('tr.sel').forEach(x => x.classList.remove('sel')); }
+async function openDrawer(sid) {
+  AD.open = {sid, course: AD.st.course_id, data: null, list: null};
+  document.querySelectorAll('.drawer').forEach(x => x.remove());
+  document.body.append(el('aside', {class: 'drawer', 'aria-label': 'Détail de l\'étudiant'}, el('div', {class: 'drawer-b', id: 'drawer-b'}, el('p', {class: 'muted'}, 'Chargement…'))));
+  if (AD.tab === 'promo') paintPromo($('#adm-body'));
+  aapi('cours_admin_student', {p_student: sid}).then(l => { if (AD.open && AD.open.sid === sid) { AD.open.list = l; drawerPaint(); } }).catch(() => {});
+  await drawerLoad(true);
+}
+async function drawerLoad(force) {
+  const o = AD.open; if (!o) return;
+  const b = $('#drawer-b'); if (!force && b && b.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  try {
+    let gid = null;
+    if (o.course === AD.st.course_id) { const u = AD.st.students.find(x => x.id === o.sid); gid = u && u.group_id; }
+    else { const m = (o.list || []).find(x => x.course_id === o.course); gid = m && m.group_id; if (!AD.contents[o.course]) AD.contents[o.course] = await aapi('cours_admin_course', {p_course: o.course}); }
+    o.data = gid ? await aapi('cours_admin_group', {p_group: gid}) : null;
+    if (AD.open === o) drawerPaint();
+  } catch (e) { if (b && force) { b.textContent = ''; b.append(el('p', {class: 'note err'}, e.message)); } }
+}
+function drawerPaint() {
+  const o = AD.open, b = $('#drawer-b'); if (!o || !b) return;
+  const st = AD.st, u = st.students.find(x => x.id === o.sid); if (!u) return closeDrawer();
+  const top = b.scrollTop, d = o.data, cur = o.course === st.course_id, U = new Map(st.students.map(x => [x.id, x]));
+  const who = id => { const x = U.get(id); return x ? x.prenom + ' ' + x.nom : '—'; };
+  const g = d && d.group, c = st.courses.find(x => x.id === o.course), ps = aParts(o.course);
+  const run = fn => async () => { try { await fn(); await adminPoll(false); await drawerLoad(true); } catch (e) { toast(e.message, 'err'); } };
+  b.textContent = '';
+  const [sl, sc] = cur ? aStatus(u, st.groups.find(x => x.id === u.group_id)) : ['', ''];
+  b.append(el('div', {class: 'row'}, avatar(u), el('div', {class: 'grow'}, el('h2', null, u.prenom + ' ' + u.nom), el('div', {class: 'small muted'}, [u.email, u.student_no, u.groupe, u.note].filter(Boolean).join(' · '))), el('button', {class: 'btn x', 'aria-label': 'Fermer', onclick: () => { closeDrawer(); }}, '✕')));
+  const csel = el('select', {'aria-label': 'Cours consulté', onchange: () => { o.course = csel.value; o.data = null; drawerLoad(true); }}, (o.list && o.list.length ? o.list : [{course_id: st.course_id, title: c ? c.title : ''}]).map(x => el('option', {value: x.course_id, selected: x.course_id === o.course}, x.title)));
+  if (!(o.list || []).some(x => x.course_id === st.course_id) && o.list && o.list.length) csel.prepend(el('option', {value: st.course_id, selected: cur}, (aCourse() || {}).title || ''));
+  b.append(el('div', {class: 'row'}, cur ? el('span', {class: 'pill ' + sc}, sl) : el('span', {class: 'pill'}, 'Cours précédent'), el('span', {class: 'dot-on' + (u.online ? ' on' : '')}), el('span', {class: 'small muted'}, u.online ? 'en ligne' : u.last_seen ? 'vu à ' + fmtClock(u.last_seen) : 'jamais vu'), el('span', {class: 'grow'}), el('div', {style: 'min-width:200px'}, csel)));
+  // Accès
+  b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Accès'), el('div', {class: 'row'}, el('span', null, 'Code personnel : ', el('code', {class: 'copyable'}, u.code)), el('span', {class: 'small muted'}, u.sessions + ' appareil(s) connecté(s)'),
+    el('button', {class: 'btn sm', onclick: () => confirmBox('Générer un nouveau code ?', 'L\'ancien code ne marchera plus et les appareils de ' + u.prenom + ' sont déconnectés.', 'Nouveau code', run(() => aset('regen_code', {student: u.id})))}, 'Nouveau code'),
+    el('button', {class: 'btn sm', onclick: run(() => aset('revoke', {student: u.id}))}, 'Déconnecter ses appareils'))));
+  // Remarque
+  const remk = (o.list || []).find(x => x.course_id === o.course), rem = el('textarea', {'aria-label': 'Remarque', placeholder: 'Remarque libre pour ce cours', style: 'min-height:60px'});
+  rem.value = cur ? (u.remark || '') : ((remk && remk.remark) || '');
+  rem.addEventListener('change', async () => { try { await aset('remark', {course: o.course, student: u.id, body: rem.value}); if (cur) u.remark = rem.value; else if (remk) remk.remark = rem.value; toast('Remarque enregistrée.'); } catch (e) { toast(e.message, 'err'); } });
+  b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Remarque pour ce cours'), rem));
+  if (!d) { b.append(el('p', {class: 'muted'}, 'Cet étudiant ne s\'est pas encore connecté à ce cours : rien à afficher.')); b.scrollTop = top; return; }
+  // Projet
+  const me = d.members.find(m => m.id === u.id);
+  b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Projet'), el('div', {class: 'row'}, d.members.map(m => el('span', {class: 'pill' + (m.id === u.id ? ' run' : '')}, m.prenom + ' ' + m.nom + ' · ' + (m.role === 'principal' ? 'principal' : 'invité'))),
+    cur && me && me.role === 'invite' ? el('button', {class: 'btn sm', onclick: () => confirmBox('Sortir ' + u.prenom + ' de ce projet ?', 'Il retrouve son projet personnel.', 'Sortir du projet', run(() => aset('detach', {course: o.course, student: u.id})))}, 'Sortir du projet') : null),
+    el('div', {class: 'small muted'}, 'Commencé : ' + fmtClock(g.started_at) + ' · dernière activité : ' + fmtClock(g.last_activity) + (g.finished_at ? ' · terminé : ' + fmtClock(g.finished_at) : ''))));
+  // Verrouillage par partie
+  const lk = el('div', {class: 'stack', style: 'gap:6px'});
+  ps.forEach((p, i) => {
+    const ov = (g.overrides || {})[p.id], auto = !!(c && c.session_active && i < g.ack_part), ro = ov === 'locked' || (ov !== 'unlocked' && auto);
+    const mk = (mode, label) => el('button', {class: 'btn sm' + ((ov || 'auto') === mode ? ' pri' : ''), onclick: run(() => aset('override', {course: o.course, group: g.id, part: p.id, mode}))}, label);
+    lk.append(el('div', {class: 'row'}, el('span', {class: 'grow'}, (i + 1) + '. ' + p.title), el('span', {class: 'pill ' + (ro ? 'warn' : 'ok')}, ro ? 'Lecture seule' : 'Modifiable'), mk('auto', 'Auto'), mk('locked', 'Verrouiller'), mk('unlocked', 'Déverrouiller')));
+  });
+  b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Verrouillage des parties pour ce projet'), lk));
+  if ((g.extras || []).length) b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Temps additionnel demandé'), g.extras.map(e => el('div', {class: 'entry'}, el('div', {class: 'meta'}, fmtTime(e.at) + ' · ' + who(e.by) + ' · passage à la partie ' + (e.pace + 1) + ' · ' + e.minutes + ' min'), el('div', null, e.why)))));
+  // Réponses
+  const A = new Map(d.answers.map(a => [a.id, a])), files = d.files;
+  const get = k => { const a = A.get(k); return a ? a.v : null; };
+  ps.forEach((p, i) => {
+    const sec = el('details', {class: 'acc', open: true}, el('summary', null, (i + 1) + '. ' + p.title));
+    p.items.filter(it => ANSWERABLE.includes(it.t)).forEach(it => {
+      sec.append(el('div', {class: 'qlabel', style: 'margin-top:10px', html: stmt(it.label)}));
+      if (it.t === 'q') {
+        const a = A.get(it.id);
+        sec.append(it.kind === 'code' || it.kind === 'short' ? el('div', {class: 'ans' + (it.kind === 'code' ? ' code' : '')}, (a && a.v) || '') : el('div', {class: 'ans rich-view', html: sanitize((a && a.v) || '')}));
+        if (a) sec.append(el('div', {class: 'row small muted'}, 'Modifié à ' + fmtClock(a.at) + ' par ' + who(a.by) + ' · ' + a.n + ' version(s)', el('button', {class: 'btn quiet sm', onclick: () => historyModal(g.id, it, who)}, 'Historique')));
+      } else if (it.t === 'table') {
+        const rows = tableRows(get, [...A.keys()], it.id);
+        if (!rows.length) sec.append(el('div', {class: 'ans'}));
+        else {
+          const tot = {};
+          const tb = el('tbody', null, rows.map(r => el('tr', null, it.cols.map(cc => { let v; if (cc.kind === 'mul') { const x = get(it.id + '/' + r.rid + '/' + cc.of[0]), y = get(it.id + '/' + r.rid + '/' + cc.of[1]); v = filled(x) && filled(y) ? num(x) * num(y) : null; if (v != null) tot[cc.k] = (tot[cc.k] || 0) + v; v = v == null ? '' : fmtNum(v); } else v = get(it.id + '/' + r.rid + '/' + cc.k) || ''; return el('td', {class: cc.kind === 'num' || cc.kind === 'mul' ? 'n' : ''}, v); }))));
+          if (it.cols.some(cc => cc.sum)) tb.append(el('tr', null, it.cols.map((cc, j) => el('td', {class: 'n', style: 'font-weight:600'}, cc.sum ? fmtNum(tot[cc.k] || 0) : (j === 0 ? 'Total' : '')))));
+          sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, it.cols.map(cc => el('th', null, cc.label)))), tb)));
+          sec.append(el('div', {class: 'row small muted'}, rows.length + ' ligne(s)', el('button', {class: 'btn quiet sm', onclick: () => historyModal(g.id, it, who)}, 'Historique')));
+        }
+      } else {
+        const fs = files.filter(f => f.item === it.id);
+        if (!fs.length) sec.append(el('div', {class: 'ans'}));
+        fs.forEach(f => sec.append(el('div', {class: 'file'}, el('button', {class: 'btn quiet', onclick: () => adownload(f)}, f.name), el('span', {class: 'small muted grow'}, fmtSize(f.size) + ' · ' + who(f.by) + ' · ' + fmtClock(f.at) + (f.deleted ? ' · retiré à ' + fmtClock(f.deleted_at) : '')), f.deleted ? el('span', {class: 'pill warn'}, 'Retiré') : null)));
+      }
+    });
+    b.append(sec);
+  });
+  // Journaux et activité
+  const jb = d.journal.filter(j => j.kind === 'bord'), ji = d.journal.filter(j => j.kind === 'ia');
+  b.append(el('details', {class: 'acc', open: true}, el('summary', null, 'Journal de bord (' + jb.length + ')'), el('div', {class: 'stack', style: 'margin-top:8px'}, jb.length ? jb.map(j => journalEntry(j, who(j.by))) : el('p', {class: 'muted small'}, 'Aucune note.'))));
+  b.append(el('details', {class: 'acc', open: true}, el('summary', null, 'Journal d\'usage de l\'IA (' + ji.length + ')'), el('div', {class: 'stack', style: 'margin-top:8px'}, ji.length ? ji.map(j => journalEntry(j, who(j.by))) : el('p', {class: 'muted small'}, 'Aucun usage déclaré.'))));
+  const EV = {invite: 'Invitation envoyée', invite_accepted: 'A rejoint le projet', invite_declined: 'Invitation refusée', group_left: 'A quitté le projet', ack: 'Passage à la partie suivante', extra: 'Temps additionnel', finish: 'Exercice terminé', reopen: 'Exercice rouvert', file_add: 'Fichier déposé', file_remove: 'Fichier retiré', admin_override: 'Verrouillage modifié par l\'enseignant'};
+  b.append(el('details', {class: 'acc'}, el('summary', null, 'Activité du projet (' + d.events.length + ')'), el('table', {class: 'data', style: 'margin-top:8px'}, el('tbody', null, d.events.map(e => el('tr', null, el('td', {style: 'white-space:nowrap'}, fmtClock(e.at)), el('td', null, EV[e.kind] || e.kind), el('td', null, e.student ? who(e.student) : 'Enseignant'), el('td', {class: 'small muted'}, e.data && (e.data.name || e.data.why || (e.data.mode ? e.data.part + ' : ' + e.data.mode : '')) || '')))))));
+  b.scrollTop = top;
+}
+async function historyModal(gid, it, who) {
+  let rows; try { rows = await aapi('cours_admin_history', {p_group: gid, p_item: it.id}); } catch (e) { return toast(e.message, 'err'); }
+  modal((b, close) => {
+    b.append(el('h2', null, 'Historique'), el('div', {class: 'muted', html: stmt(it.label)}), el('p', {class: 'small muted'}, 'Du plus récent au plus ancien. Un instantané est gardé par auteur et par minute d\'écriture.'));
+    const list = el('div', {class: 'stack'}); b.append(el('div', {class: 'zoom-area', style: 'padding:12px'}, list));
+    if (!rows.length) list.append(el('p', {class: 'muted'}, 'Aucune modification enregistrée.'));
+    rows.forEach(h => { const v = typeof h.v === 'string' ? h.v : JSON.stringify(h.v); list.append(el('div', {class: 'entry'}, el('div', {class: 'meta'}, fmtClock(h.first_at) + (h.saves > 1 ? ' → ' + fmtTime(h.at) : '') + ' · ' + who(h.by) + ' · ' + h.saves + ' enregistrement(s)' + (h.item ? ' · ' + h.item : '')), it.t === 'q' && it.kind !== 'code' && it.kind !== 'short' ? el('div', {class: 'rich-view', html: sanitize(v)}) : el('div', {style: 'white-space:pre-wrap;overflow-wrap:anywhere'}, v))); });
+    b.append(el('div', {class: 'row'}, el('button', {class: 'btn', onclick: close}, 'Fermer')));
+  }, {wide: true});
+}
+
+/* ---------- Cours et ressources ---------- */
+const TEMPLATE = {welcome: [{t: 'Bienvenue', html: '<p>Texte d\'accueil.</p>'}], parts: [{id: 'p1', title: 'Première partie', minutes: 30, items: [{t: 'text', html: '<p>Consigne.</p>'}, {t: 'q', id: 'p1.q1', kind: 'rich', label: 'Votre question'}]}]};
+function paintCours(body) {
+  const st = AD.st; body.textContent = '';
+  let edit = AD.edit || (aCourse() ? aCourse().id : null);
+  const isNew = edit === '__new__', cc = isNew ? {id: '', title: '', position: st.courses.length + 1, content: TEMPLATE, resources: []} : aContent(edit);
+  const pick = el('select', {'aria-label': 'Cours à modifier', onchange: async () => { AD.edit = pick.value; if (pick.value !== '__new__' && !AD.contents[pick.value]) AD.contents[pick.value] = await aapi('cours_admin_course', {p_course: pick.value}); paintCours(body); }}, st.courses.map(x => el('option', {value: x.id, selected: x.id === edit}, x.title)), el('option', {value: '__new__', selected: isNew}, '+ Nouveau cours'));
+  body.append(el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Contenu du cours'), el('div', {style: 'min-width:260px'}, pick)));
+  if (!edit) { AD.edit = '__new__'; return paintCours(body); }
+  const id = el('input', {type: 'text', value: cc.id || '', readonly: !isNew, placeholder: '2026-c2'}), title = el('input', {type: 'text', value: cc.title || ''}), pos = el('input', {type: 'number', value: cc.position == null ? 1 : cc.position});
+  const json = el('textarea', {class: 'code', spellcheck: 'false', style: 'min-height:420px'}); json.value = JSON.stringify(cc.content, null, 2);
+  const msg = el('p', {class: 'note', hidden: true});
+  const say = (t, k) => { msg.hidden = false; msg.className = 'note ' + (k || ''); msg.textContent = t; };
+  body.append(el('div', {class: 'grid2'}, el('label', {class: 'f'}, 'Identifiant (non modifiable ensuite)', id), el('label', {class: 'f'}, 'Titre', title), el('label', {class: 'f'}, 'Ordre', pos)),
+    el('details', {class: 'acc'}, el('summary', null, 'Format du contenu'), el('div', {class: 'stmt', html: '<p>Un objet avec <code>welcome</code> (écrans d\'accueil : <code>t</code>, <code>html</code>) et <code>parts</code>. Chaque partie a un <code>id</code>, un <code>title</code>, des <code>minutes</code> conseillées et des <code>items</code> :</p><ul><li><code>{"t":"h","title":"…"}</code> : titre de section</li><li><code>{"t":"text","html":"…"}</code> : consigne, attachée à la question qui suit</li><li><code>{"t":"q","id":"p1.q1","kind":"rich|short|code","label":"…"}</code> : question</li><li><code>{"t":"table","id":"p2.bom","label":"…","cols":[{"k":"ref","label":"Référence"},{"k":"pu","label":"Prix","kind":"num"},{"k":"prio","label":"Priorité","kind":"select","opts":["Must","Should"]},{"k":"tot","label":"Total","kind":"mul","of":["pu","qte"],"sum":true}]}</code> : tableau à lignes libres</li><li><code>{"t":"upload","id":"p2.map","label":"…"}</code> : dépôt de fichiers</li><li><code>{"t":"res","title":"…","html":"…"}</code> : bloc affiché dans le panneau Ressources</li></ul><p>Ne changez pas l\'<code>id</code> d\'une question qui a déjà des réponses : elles n\'y seraient plus rattachées.</p>'})),
+    el('label', {class: 'f'}, 'Contenu (JSON)', json), msg,
+    el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: async () => {
+      let c; try { c = JSON.parse(json.value); } catch (e) { return say('JSON invalide : ' + e.message, 'err'); }
+      try { await aapi('cours_admin_course_save', {p_id: id.value.trim(), p_title: title.value.trim() || id.value.trim(), p_position: +pos.value || 0, p_content: c}); AD.edit = id.value.trim(); delete AD.contents[AD.edit]; AD.contents[AD.edit] = await aapi('cours_admin_course', {p_course: AD.edit}); await adminPoll(false); toast('Cours enregistré. Les étudiants connectés le reçoivent en quelques secondes.'); adminPaint(true); }
+      catch (e) { say(e.message, 'err'); }
+    }}, 'Enregistrer le cours'), el('button', {class: 'btn', onclick: () => { try { const c = JSON.parse(json.value); say('JSON valide : ' + (c.parts || []).length + ' partie(s), ' + itemsOf(c).length + ' question(s), tableau(x) ou dépôt(s).', 'ok'); } catch (e) { say('JSON invalide : ' + e.message, 'err'); } }}, 'Vérifier'),
+      !isNew ? el('button', {class: 'btn danger', onclick: () => confirmBox('Supprimer ce cours ?', 'Possible uniquement si aucun étudiant n\'y a encore travaillé.', 'Supprimer', async () => { await aset('course_delete', {course: edit}); AD.edit = null; AD.sel = null; LS.set('acourse', null); await adminPoll(false); adminRender(); }, true)}, 'Supprimer') : null));
+  if (isNew) return;
+  // Ressources
+  const up = async (kind, files, part, state) => {
+    let ok = 0, matched = 0;
+    for (const f of files) {
+      state.textContent = 'Envoi de ' + f.name + '…';
+      try { const t = await aapi('cours_admin_upload_start', {p_kind: kind, p_course: edit, p_part: part || '', p_name: f.name, p_size: f.size, p_mime: f.type || ''}); await putFile(t.path, f); const r = await aapi('cours_admin_upload_done', {p_file: t.id}); ok++; if (r.matched) matched++; }
+      catch (e) { toast(f.name + ' : ' + e.message, 'err'); }
+    }
+    state.textContent = ok + ' fichier(s) envoyé(s)' + (kind === 'photo' ? ', ' + matched + ' rattaché(s) à un étudiant' : '') + '.';
+    AD.contents[edit] = await aapi('cours_admin_course', {p_course: edit}); await adminPoll(false); if (kind === 'resource') paintCours(body);
+  };
+  const rs = el('div', {class: 'stack', style: 'gap:6px'});
+  (cc.resources || []).forEach(f => rs.append(el('div', {class: 'file'}, el('button', {class: 'btn quiet', onclick: () => adownload(f)}, f.name), el('span', {class: 'small muted grow'}, fmtSize(f.size) + ' · ' + (f.part ? 'partie ' + f.part : 'toutes les parties')), el('button', {class: 'btn sm', onclick: () => confirmBox('Retirer cette ressource ?', f.name, 'Retirer', async () => { await aset('resource_delete', {file: f.id}); AD.contents[edit] = await aapi('cours_admin_course', {p_course: edit}); paintCours(body); })}, 'Retirer'))));
+  if (!(cc.resources || []).length) rs.append(el('p', {class: 'muted small'}, 'Aucune ressource.'));
+  const psel = el('select', {'aria-label': 'Partie'}, el('option', {value: ''}, 'Toutes les parties'), (cc.content.parts || []).map((p, i) => el('option', {value: p.id}, (i + 1) + '. ' + p.title)));
+  const st1 = el('span', {class: 'small muted'}), fin = el('input', {type: 'file', multiple: true, hidden: true, onchange: () => { const fs = [...fin.files]; fin.value = ''; up('resource', fs, psel.value, st1); }});
+  body.append(el('div', {class: 'sub'}, el('h2', null, 'Ressources à télécharger par les étudiants'), el('p', {class: 'muted small'}, 'Photos du produit, modèles, documents. Les images s\'affichent directement dans le panneau Ressources.'), rs, el('div', {class: 'row'}, el('div', {style: 'min-width:220px'}, psel), el('button', {class: 'btn', onclick: () => fin.click()}, 'Ajouter des fichiers'), st1, fin)));
+  const st2 = el('span', {class: 'small muted'}), pin = el('input', {type: 'file', multiple: true, accept: 'image/*', hidden: true, onchange: () => { const fs = [...pin.files]; pin.value = ''; up('photo', fs, '', st2); }});
+  body.append(el('div', {class: 'sub'}, el('h2', null, 'Photos du trombinoscope'), el('p', {class: 'muted small'}, 'Sélectionnez les photos dont le nom contient le numéro étudiant (par exemple F1_CARLIER_22305393.jpg). Elles ne sont visibles que dans le backoffice.'), el('div', {class: 'row'}, el('button', {class: 'btn', onclick: () => pin.click()}, 'Importer des photos'), st2, pin)));
+}
+
+/* ---------- Codes et étudiants ---------- */
+function paintCodes(body) {
+  const st = AD.st; body.textContent = '';
+  const url = location.origin + location.pathname;
+  body.append(el('div', {class: 'row noprint'}, el('h2', {class: 'grow'}, 'Codes personnels'), el('button', {class: 'btn pri', onclick: () => window.print()}, 'Imprimer les bandelettes')),
+    el('p', {class: 'muted noprint'}, 'Un code par étudiant, à remettre en main propre. Adresse de la plateforme : ', el('code', {class: 'copyable'}, url)));
+  const grid = el('div', {class: 'codes'});
+  st.students.filter(u => u.active).forEach(u => grid.append(el('div', {class: 'codecard'}, el('b', null, u.nom + ' ' + u.prenom), el('div', {class: 'small muted'}, url.replace(/^https?:\/\//, '')), el('div', {class: 'bigcode'}, u.code))));
+  body.append(grid);
+  const nom = el('input', {type: 'text', placeholder: 'NOM'}), prenom = el('input', {type: 'text', placeholder: 'Prénom'}), mail = el('input', {type: 'email', placeholder: 'E-mail (facultatif)'});
+  body.append(el('div', {class: 'sub noprint'}, el('h2', null, 'Ajouter un étudiant'), el('div', {class: 'grid2'}, nom, prenom, mail), el('div', {class: 'row'}, el('button', {class: 'btn', onclick: async () => { try { await aset('add_student', {nom: nom.value, prenom: prenom.value, email: mail.value}); await adminPoll(false); paintCodes(body); toast('Étudiant ajouté.'); } catch (e) { toast(e.message, 'err'); } }}, 'Ajouter'))));
+  const off = st.students.filter(u => !u.active);
+  body.append(el('div', {class: 'sub noprint'}, el('h2', null, 'Retirer ou rétablir un étudiant'), el('div', {class: 'stack', style: 'gap:6px'}, st.students.map(u => el('div', {class: 'file'}, el('span', {class: 'grow' + (u.active ? '' : ' muted')}, u.nom + ' ' + u.prenom + (u.active ? '' : ' (retiré)')), el('button', {class: 'btn sm', onclick: async () => { try { await aset('student_active', {student: u.id, active: !u.active}); await adminPoll(false); paintCodes(body); } catch (e) { toast(e.message, 'err'); } }}, u.active ? 'Retirer de la liste' : 'Rétablir'))))));
+}
+
+/* ---------- Aiguillage ---------- */
+window.addEventListener('hashchange', () => location.reload());
+if (location.hash === '#admin') adminStart(); else studentStart();
+
+</script>
+</body>
+</html>
