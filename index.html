@@ -366,6 +366,24 @@ table.promo .pill{margin:1px 0}
 .gal-i{appearance:none;border:0;padding:0;cursor:zoom-in;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:var(--wash);box-shadow:inset 0 0 0 1px var(--line)}
 .gal-i img{width:100%;height:100%;object-fit:cover;display:block} .gal-i img:not([src]){visibility:hidden} .gal-i.ko{display:none}
 
+/* Tableaux : poignée de déplacement, lignes héritées, tableau comparatif */
+.grip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:30px;cursor:grab;color:var(--ink-45);font-size:15px;border-radius:6px;user-select:none}
+.grip:hover{background:var(--wash);color:var(--brand)} .grip:active{cursor:grabbing}
+table.fill tr.dragging{opacity:.45}
+table.fill tr.drop-before td{box-shadow:inset 0 3px 0 var(--accent)} table.fill tr.drop-after td{box-shadow:inset 0 -3px 0 var(--accent)}
+tr.inh-row td{background:rgba(159,162,164,.12);color:var(--ink-60)}
+table.fill tr.inh-row td.fx{white-space:normal;min-width:84px}
+tr.inh-row.struck td:not(.act){text-decoration:line-through;color:var(--ink-45)}
+.btn.sm.strike{min-height:26px;padding:0 8px;font-size:11px}
+table.fill th.act:first-child,table.fill td.act:first-child{width:28px;padding:6px 0 6px 4px}
+table.fill.matrix th.crit{min-width:170px;max-width:220px;text-align:left;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--brand);background:rgba(1,78,126,.04);padding:8px 10px;vertical-align:top}
+table.fill.matrix tbody th.crit textarea{font-weight:600}
+table.fill.matrix td{min-width:150px}
+.hdr .logo{width:112px;margin:0 6px -4px -6px}
+.wrap .logo{width:120px;margin-left:-8px}
+table.fill tfoot td.tl{text-align:right}
+.grip[hidden]{display:none!important}
+
 </style>
 </head>
 <body>
@@ -512,6 +530,9 @@ const LS = {
   set(k, v) { try { v == null ? localStorage.removeItem('cours:' + k) : localStorage.setItem('cours:' + k, String(v)); } catch (e) {} }
 };
 
+const LOGO = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDY5Ljk4OSIgaGVpZ2h0PSIyMTIuNjAyIiB2aWV3Qm94PSIwIDAgMTI0LjM1MSA1Ni4yNTExIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBpZD0ic3ZnMTA2MyIgb3ZlcmZsb3c9ImhpZGRlbiI+PGRlZnMgaWQ9ImRlZnMxMDYwIj48L2RlZnM+PGcgaWQ9ImxheWVyMSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTMzLjI0NDQgLTM1LjkwMDkpIj48ZyBpZD0iZzEwNTEzIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyOC4yMTA5IC0xMDYuODc2KSI+PHJlY3QgeD0iNS4wMzM0NiIgeT0iMTQyLjc3NiIgcng9IjI5LjY0NTIiIHdpZHRoPSIxMjQuMzUxIiBoZWlnaHQ9IjU2LjI1MTEiIGlkPSJyZWN0MTI5LTUtNi00MC02LTQiIHN0cm9rZS13aWR0aD0iMCIgZmlsbD0iI0ZGRkZGRiIgZmlsbC1vcGFjaXR5PSIwIi8+PGcgaWQ9ImcxMDE1NiI+PHBhdGggZD0iTTc1LjA1OSAxNjIuOTA3Qzc4LjgxNzUgMTYwLjk0MyA3Ny4zNDM2IDE1NS40MDkgNzMuMDY3OSAxNTUuNDMgNzAuODQ4OCAxNTUuNDQyIDY4Ljk1NTcgMTU3LjYxOCA2OS4yNTY1IDE1OS44MTIgNjkuNjQ2OCAxNjIuNjYgNzIuNTU4OSAxNjQuMjEzIDc1LjA1OSAxNjIuOTA3WiIgaWQ9InBhdGgxMjM4LTgyLTItOC0xLTAtNy01LTAiIHN0cm9rZS13aWR0aD0iMC4xNzcyMjciIGZpbGw9IiM5RkEyQTQiLz48ZyBpZD0iZzU5MjAtNCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTU5NS40MDggMTg1LjU3MikiPjxwYXRoIGQ9Ik02MTIuOTQ2LTE4Ljg2NDRDNjEyLjk4LTE5LjY3NzIgNjEzLjAzOC0yMS4wMDk4IDYxMy4wNzUtMjEuODI1NiA2MTMuMjMyLTI1LjM0MjEgNjE1LjE0MS0yNy42Mzc0IDYxOC44MTktMjguNzM0IDYxOS42MDItMjguOTY3NiA2MjEuMjc3LTI5LjAzNTcgNjI3LjgyNC0yOS4xMDA2TDYzNS44NjctMjkuMTgwMyA2MzUuNzQ1LTI4LjY1NDlDNjM1LjI0Mi0yNi40ODk1IDYzNC4yODMtMjQuOTA3MiA2MzIuODc2LTIzLjkyNDYgNjMxLjQ4Mi0yMi45NTA2IDYzMC43NjYtMjIuODMzOSA2MjUuMTU4LTIyLjY2NjMgNjE3LjE5Mi0yMi40MjgzIDYxNC44MzYtMjEuNTQ2MSA2MTMuMjc0LTE4LjIxNTVMNjEyLjg4NS0xNy4zODY0WiIgaWQ9InBhdGgxMjE5LTMtMS0zLTgtNC00LTEiIHN0cm9rZS13aWR0aD0iMC4xODU0MTEiIGZpbGw9IiMwMDQwNjgiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGQ9Ik02MjAuMzYzLTQuNjIwMTVDNjI0LjEyMi02LjU4MzYyIDYyMi42NDgtMTIuMTE3OCA2MTguMzcyLTEyLjA5NjQgNjE2LjE1My0xMi4wODUzIDYxNC4yNi05LjkwOTI1IDYxNC41NjEtNy43MTUyMSA2MTQuOTUxLTQuODY3MzcgNjE3Ljg2My0zLjMxNDA4IDYyMC4zNjMtNC42MjAxNVoiIGlkPSJwYXRoMTIzOC04Mi0yLTgtMS0wLTUtNiIgc3Ryb2tlLXdpZHRoPSIwLjE3NzIyNyIgZmlsbD0iIzlGQTJBNCIvPjxwYXRoIGQ9Ik02MTcuNDI3LTE3LjEwNjYgNjI0LjgyNS0xNy4xMDI2IDYyNC44MjUtMTcuMTAyNiA2MjQuODI1LTE3LjEwMjYiIGlkPSJwYXRoMTI0NC04LTYtNi0xLTItMy0xIiBzdHJva2U9IiMwMDQwNjgiIHN0cm9rZS13aWR0aD0iNS43OTY3NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSIjMDA0MDY4Ii8+PC9nPjxwYXRoIGQ9Ik00NC4wODk2IDE1OS4wOTkgNDQuMDg5NiAxNzguNTYiIGlkPSJwYXRoMTQ0My03LTIiIHN0cm9rZT0iIzAwNDA2OCIgc3Ryb2tlLXdpZHRoPSI1LjU0MyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTUiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNNzMuMjIzMyAxNjcuNDE3IDczLjI0NzkgMTc4LjU1NyIgaWQ9InBhdGgxNDQzLTYtOC0xIiBzdHJva2U9IiMwMDQwNjgiIHN0cm9rZS13aWR0aD0iNS41NDMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjE1IiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTEwMS4wNTEgMTY4LjgzMSAxMDYuNzU4IDE4MC4wNDEiIGlkPSJwYXRoMTQ0My02LTItNy0zIiBzdHJva2U9IiMwMDQwNjgiIHN0cm9rZS13aWR0aD0iNS41NDMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjE1IiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTExMi44MSAxNjguNzEzIDEwMi44MDggMTg4LjA5MyIgaWQ9InBhdGgxNDQzLTYtMi00LTktNyIgc3Ryb2tlPSIjMDA0MDY4IiBzdHJva2Utd2lkdGg9IjUuNTQzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxNSIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik05My42OTgyIDE1Ny45ODIgOTMuNjk4MiAxNzguMzg1IiBpZD0icGF0aDE0NDMtNi05LTYtMiIgc3Ryb2tlPSIjMDA0MDY4IiBzdHJva2Utd2lkdGg9IjUuNTQzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxNSIgZmlsbD0ibm9uZSIvPjxlbGxpcHNlIGN4PSI4Ny4yNDgiIGN5PSIxNzIuOTI5IiByeD0iNi4wMjk0NyIgcnk9IjUuOTY5NjYiIGlkPSJwYXRoMzMwMy0wLTQiIHN0cm9rZT0iIzAwNDA2OCIgc3Ryb2tlLXdpZHRoPSI0Ljk1IiBmaWxsPSJub25lIiBmaWxsLW9wYWNpdHk9IjAuMDY1MjU1NyIvPjxwYXRoIGQ9Ik01My4xNTEzIDE2Ny4yOTZDNTMuMTUxMyAxNjcuMjk2IDUzLjE3OTIgMTY5LjAwOCA1My4xOTM3IDE3MS40NDcgNTMuMjA0MiAxNzMuMjE4IDUzLjE5OTYgMTc1LjI0NyA1My42OTYzIDE3Ni4yNDkgNTQuNzY1NiAxNzguNDA2IDU2Ljk2MjUgMTc5LjAwMiA1OS4zNjkxIDE3OC45NDQgNjEuNjY1MSAxNzguODg5IDYzLjI1MzIgMTc4LjIzMSA2NC4yOTcgMTc2LjE4NiA2NC45NDQ2IDE3NC45MTYgNjQuODEyOSAxNzIuMzk4IDY0LjgzMzEgMTcwLjM3OSA2NC44NTM1IDE2OC4zNTIgNjQuODI5MSAxNjcuMjE5IDY0LjgyOTEgMTY3LjIxOSIgaWQ9InBhdGgxNzkwLTciIHN0cm9rZT0iIzAwNDA2OCIgc3Ryb2tlLXdpZHRoPSI0LjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvZz48L2c+PC9nPjwvc3ZnPg==';
+function logoEl() { return el('img', {class: 'logo', src: LOGO, alt: 'Fluidy'}); }
+
 /* ---------- Appels à la base ---------- */
 class ApiError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
 async function api(fn, args, opts) {
@@ -654,7 +675,7 @@ async function showLogin() {
 function loginScreen(root) {
   const wrap = el('div', {class: 'wrap'}), b = S.boot;
   root.append(wrap);
-  wrap.append(el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#admin', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace enseignant')));
+  wrap.append(el('div', {class: 'row'}, logoEl(), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#admin', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace enseignant')));
   if (b.state !== 'open') {
     wrap.append(el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, b.state === 'paused' ? 'La plateforme est en pause' : b.state === 'none' ? 'Aucun cours n\'est ouvert pour le moment' : 'Connexion impossible'),
       el('p', {class: 'big muted'}, b.state === 'error' ? b.msg : 'Cette page se mettra à jour toute seule dès que l\'enseignant ouvrira le cours.')));
@@ -809,7 +830,7 @@ function render() {
   if (S.view === 'boot') return root.append(el('div', {class: 'wrap'}, el('p', {class: 'muted'}, 'Chargement…')));
   if (S.view === 'neterr') return root.append(el('div', {class: 'wrap'}, el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, 'Connexion impossible'), el('p', {class: 'big muted'}, 'Vérifiez votre réseau. La page réessaie toute seule.'), el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: () => location.reload()}, 'Réessayer')))));
   if (S.view === 'login') return loginScreen(root);
-  if (S.view === 'closed') return root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('button', {class: 'btn quiet', onclick: () => logout()}, 'Se déconnecter')),
+  if (S.view === 'closed') return root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, logoEl(), el('span', {class: 'grow'}), el('button', {class: 'btn quiet', onclick: () => logout()}, 'Se déconnecter')),
     el('div', {class: 'stack', style: 'margin-top:12vh'}, el('h1', null, S.closed === 'paused' ? 'La plateforme est en pause' : 'Aucun cours n\'est ouvert pour le moment'), el('p', {class: 'big muted'}, 'Vos réponses sont enregistrées. Cette page se rouvrira toute seule dès que l\'enseignant relancera le cours.'))));
   root.className = 'shell';
   root.style.setProperty('--wl', ui.wl + 'px'); root.style.setProperty('--wr', ui.wr + 'px');
@@ -825,9 +846,9 @@ function render() {
   paintPresence(); paintChip(); paintSave();
 }
 function header(root) {
-  const h = el('header', {class: 'hdr'}); h.append(el('span', {class: 'logo-txt'}, 'Fluidy'));
+  const h = el('header', {class: 'hdr'}); h.append(logoEl());
   const p = curPart();
-  h.append(el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, p ? 'Partie ' + (S.part + 1) + ' sur ' + parts().length + ' · ' + S.course.title : 'Cours ISIMA · Fluidy'), el('b', null, p ? p.title : S.course.title)));
+  h.append(el('div', {class: 'hdr-title'}, el('b', null, S.course.title)));
   const tools = el('div', {class: 'hdr-tools'}); h.append(tools);
   if (S.sy.group.finished_at) tools.append(el('span', {class: 'pill ok'}, 'Exercice terminé'));
   if (p) tools.append(el('span', {class: 'chip', id: 'chip', role: 'timer'}));
@@ -965,34 +986,68 @@ function qField(it, ro) {
   FIELDS.set(it.id, {set: setV, lock(n) { badge.hidden = !n; badge.textContent = n ? n + ' écrit ici…' : ''; box.classList.toggle('held', !!n); if (document.activeElement !== node) setRO(ro || !!n); }});
   return box;
 }
+function cellInput(k, ro, attrs, onInput) {
+  const inp = attrs.select ? el('select', {disabled: ro, 'aria-label': attrs.label}, el('option', {value: ''}, '—'), attrs.select.map(o => el('option', {value: o}, o)))
+    : el('textarea', {rows: 1, readonly: ro, 'aria-label': attrs.label, placeholder: attrs.ph || null, inputmode: attrs.num ? 'decimal' : null, class: attrs.num ? 'n' : null});
+  inp.value = ansOf(k) || ''; inp.dataset.item = k;
+  const on = () => { onInput(inp.value); if (inp.tagName === 'TEXTAREA') autoGrow(inp); };
+  inp.addEventListener('input', on); if (inp.tagName === 'SELECT') inp.addEventListener('change', on);
+  FIELDS.set(k, {set(x) { if (document.activeElement !== inp && inp.value !== (x || '')) { inp.value = x || ''; if (inp.tagName === 'TEXTAREA') autoGrow(inp); } },
+    lock(n) { inp.classList.toggle('held', !!n); inp.title = n ? n + ' écrit ici' : ''; if (document.activeElement !== inp) { if (inp.tagName === 'SELECT') inp.disabled = ro || !!n; else inp.readOnly = ro || !!n; } }});
+  return inp;
+}
 function tableField(it, ro) {
-  const badge = lockBadge(), box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)}), badge));
-  const body = el('tbody'), foot = el('tfoot'), trs = new Map(); let ghost = null;
-  const key = (r, k) => it.id + '/' + r + '/' + k;
-  const hasSum = it.cols.some(c => c.sum);
-  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill'}, el('thead', null, el('tr', null, it.cols.map(c => el('th', {class: (c.kind === 'num' || c.kind === 'mul' ? 'n' : '') + (c.wide ? ' wide' : '')}, c.label)), ro ? null : el('th', {class: 'act'}))), body, hasSum ? foot : null)));
+  if (it.matrix) return matrixField(it, ro);
+  const box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)})));
+  const body = el('tbody'), inh = it.from ? el('tbody', {class: 'inh'}) : null, foot = el('tfoot'), trs = new Map(); let ghost = null, dragRid = null;
+  const key = (r, k) => it.id + '/' + r + '/' + k, skey = (r, k) => it.from + '/' + r + '/' + k;
+  const hasSum = it.cols.some(c => c.sum), isN = c => c.kind === 'num' || c.kind === 'mul';
+  const valOf = (kf, r, c) => c.kind === 'mul' ? num(ansOf(kf(r, c.of[0]))) * num(ansOf(kf(r, c.of[1]))) : num(ansOf(kf(r, c.k)));
+  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill'}, el('thead', null, el('tr', null, ro ? null : el('th', {class: 'act'}), it.cols.map(c => el('th', {class: (isN(c) ? 'n' : '') + (c.wide ? ' wide' : '')}, c.label)), ro ? null : el('th', {class: 'act'}))), inh, body, hasSum ? foot : null)));
   const empty = el('p', {class: 'muted small', hidden: true}, 'Aucune ligne.'); box.append(empty);
-  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); } } }
+  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); const g = trs.get(r) && trs.get(r).querySelector('.grip'); if (g) g.hidden = false; } } }
   function calc(r) { const tr = trs.get(r); if (!tr) return; it.cols.filter(c => c.kind === 'mul').forEach(c => { const a = ansOf(key(r, c.of[0])), b = ansOf(key(r, c.of[1])); tr.querySelector('[data-calc="' + c.k + '"]').textContent = filled(a) && filled(b) ? fmtNum(num(a) * num(b)) : ''; }); }
   function total() {
     if (!hasSum) return; foot.textContent = '';
-    const rows = tableRows(ansOf, S.A.keys(), it.id), tr = el('tr');
-    it.cols.forEach((c, i) => { let t = ''; if (c.sum) { let s = 0; rows.forEach(r => { s += c.kind === 'mul' ? num(ansOf(key(r.rid, c.of[0]))) * num(ansOf(key(r.rid, c.of[1]))) : num(ansOf(key(r.rid, c.k))); }); t = fmtNum(s); } tr.append(el('td', {class: c.sum ? 'n sum' : ''}, i === 0 && !c.sum ? 'Total' : t)); });
-    if (!ro) tr.append(el('td')); foot.append(tr);
+    const own = tableRows(ansOf, S.A.keys(), it.id), src = it.from ? tableRows(ansOf, S.A.keys(), it.from) : [];
+    const k0 = it.cols.findIndex(c => c.sum);
+    const line = (label, fn) => { const tr = el('tr'); tr.append(el('td', {colspan: k0 + (ro ? 0 : 1), class: 'tl'}, label)); it.cols.slice(k0).forEach(c => tr.append(el('td', {class: c.sum ? 'n sum' : ''}, c.sum ? fmtNum(fn(c)) : ''))); if (!ro) tr.append(el('td')); foot.append(tr); };
+    const sumOwn = c => own.reduce((s, r) => s + valOf(key, r.rid, c), 0), sumSrc = (c, all) => src.reduce((s, r) => s + (all || !ansOf(key(r.rid, 'x')) ? valOf(skey, r.rid, c) : 0), 0);
+    line(it.from ? 'Total du nouveau produit' : 'Total', c => sumOwn(c) + sumSrc(c, false));
+    if (it.from) line('Écart avec le produit existant', c => sumOwn(c) + sumSrc(c, false) - sumSrc(c, true));
+  }
+  function paintInh() {
+    if (!inh) return; inh.textContent = '';
+    const src = tableRows(ansOf, S.A.keys(), it.from);
+    if (!src.length) inh.append(el('tr', {class: 'inh-row'}, el('td', {colspan: it.cols.length + (ro ? 0 : 2), class: 'muted small'}, 'Le tableau du produit existant est vide pour le moment.')));
+    src.forEach(r => {
+      const x = !!ansOf(key(r.rid, 'x')), tr = el('tr', {class: 'inh-row' + (x ? ' struck' : '')});
+      if (!ro) tr.append(el('td', {class: 'act'}));
+      it.cols.forEach(c => { let v; if (c.kind === 'mul') { const a = ansOf(skey(r.rid, c.of[0])), b = ansOf(skey(r.rid, c.of[1])); v = filled(a) && filled(b) ? fmtNum(num(a) * num(b)) : ''; } else v = ansOf(skey(r.rid, c.k)) || ''; tr.append(el('td', {class: 'fx' + (isN(c) ? ' n' : '')}, v)); });
+      if (!ro) tr.append(el('td', {class: 'act'}, el('button', {class: 'btn sm strike', type: 'button', title: x ? 'Rétablir cette ligne' : 'Barrer cette ligne : elle ne fait plus partie du nouveau produit', onclick: () => { setAns(key(r.rid, 'x'), !x); refresh(); }}, x ? 'Rétablir' : 'Barrer')));
+      inh.append(tr);
+    });
+  }
+  function drop(target, after) {
+    const rows = tableRows(ansOf, S.A.keys(), it.id).filter(r => r.rid !== dragRid), i = rows.findIndex(r => r.rid === target); if (i < 0 || !dragRid) return;
+    const pos = after ? i + 1 : i, prev = rows[pos - 1], next = rows[pos];
+    const o = prev && next ? (prev.o + next.o) / 2 : prev ? prev.o + 1000 : next ? next.o - 1000 : Date.now();
+    setAns(key(dragRid, '_'), {...(ansOf(key(dragRid, '_')) || {}), o}); refresh(true);
   }
   function addTr(r) {
     const tr = el('tr'); trs.set(r, tr);
+    if (!ro) {
+      const grip = el('span', {class: 'grip', draggable: 'true', title: 'Glisser pour déplacer la ligne', 'aria-label': 'Déplacer la ligne', hidden: r === ghost}, '⠿');
+      grip.addEventListener('dragstart', e => { dragRid = r; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', r); e.dataTransfer.setDragImage(tr, 12, 12); } catch (x) {} });
+      grip.addEventListener('dragend', () => { dragRid = null; body.querySelectorAll('tr').forEach(t => t.classList.remove('dragging', 'drop-before', 'drop-after')); });
+      tr.addEventListener('dragover', e => { if (!dragRid || r === ghost || r === dragRid) return; e.preventDefault(); const b = tr.getBoundingClientRect(), after = e.clientY > b.top + b.height / 2; tr.classList.toggle('drop-after', after); tr.classList.toggle('drop-before', !after); });
+      tr.addEventListener('dragleave', () => tr.classList.remove('drop-before', 'drop-after'));
+      tr.addEventListener('drop', e => { if (!dragRid || r === ghost || r === dragRid) return; e.preventDefault(); const b = tr.getBoundingClientRect(); drop(r, e.clientY > b.top + b.height / 2); });
+      tr.append(el('td', {class: 'act'}, grip));
+    }
     for (const c of it.cols) {
       if (c.kind === 'mul') { tr.append(el('td', {class: 'fx n'}, el('span', {'data-calc': c.k}))); continue; }
-      const k = key(r, c.k); let inp;
-      if (c.kind === 'select') { inp = el('select', {disabled: ro, 'aria-label': c.label}, el('option', {value: ''}, '—'), (c.opts || []).map(o => el('option', {value: o}, o))); inp.value = ansOf(k) || ''; }
-      else { inp = el('textarea', {rows: 1, readonly: ro, 'aria-label': c.label, inputmode: c.kind === 'num' ? 'decimal' : null, class: c.kind === 'num' ? 'n' : null}); inp.value = ansOf(k) || ''; }
-      inp.dataset.item = k;
-      const on = () => { ensure(r); setAns(k, inp.value); if (inp.tagName === 'TEXTAREA') autoGrow(inp); calc(r); total(); };
-      inp.addEventListener('input', on); if (inp.tagName === 'SELECT') inp.addEventListener('change', on);
-      FIELDS.set(k, {set(x) { if (document.activeElement !== inp && inp.value !== (x || '')) { inp.value = x || ''; if (inp.tagName === 'TEXTAREA') autoGrow(inp); } },
-        lock(n) { inp.classList.toggle('held', !!n); inp.title = n ? n + ' écrit ici' : ''; if (document.activeElement !== inp) { if (inp.tagName === 'SELECT') inp.disabled = ro || !!n; else inp.readOnly = ro || !!n; } }});
-      tr.append(el('td', {class: c.wide ? 'wide' : ''}, inp));
+      tr.append(el('td', {class: c.wide ? 'wide' : ''}, cellInput(key(r, c.k), ro, {label: c.label, select: c.kind === 'select' ? (c.opts || []) : null, num: c.kind === 'num'}, v => { ensure(r); setAns(key(r, c.k), v); calc(r); total(); })));
     }
     if (!ro) tr.append(el('td', {class: 'act'}, el('button', {class: 'btn x', type: 'button', title: 'Supprimer la ligne', 'aria-label': 'Supprimer la ligne', onclick: () => {
       if (r === ghost) return; const m = ansOf(key(r, '_')) || {o: Date.now()}; setAns(key(r, '_'), {o: m.o, d: true}); refresh();
@@ -1001,16 +1056,45 @@ function tableField(it, ro) {
     requestAnimationFrame(() => tr.querySelectorAll('textarea').forEach(autoGrow));
   }
   function addGhost() { if (ro) return; ghost = rid(); addTr(ghost); }
-  function refresh() {
+  function refresh(force) {
     const rows = tableRows(ansOf, S.A.keys(), it.id), ids = new Set(rows.map(r => r.rid));
     for (const [r, tr] of trs) if (!ids.has(r) && r !== ghost && !tr.contains(document.activeElement)) { tr.remove(); trs.delete(r); it.cols.forEach(c => FIELDS.delete(key(r, c.k))); }
     for (const r of rows) if (!trs.has(r.rid)) addTr(r.rid);
+    if (force || !body.contains(document.activeElement)) rows.forEach(r => body.append(trs.get(r.rid)));
     if (ghost && trs.get(ghost) && body.lastChild !== trs.get(ghost)) body.append(trs.get(ghost));
     for (const r of rows) calc(r.rid);
-    total(); empty.hidden = !(ro && !rows.length);
+    paintInh(); total(); empty.hidden = !(ro && !rows.length && !it.from);
   }
   refresh(); addGhost(); total();
-  if (!ro) box.append(el('p', {class: 'muted small'}, 'Une nouvelle ligne s\'ajoute dès que vous écrivez dans la dernière.'));
+  if (!ro) box.append(el('p', {class: 'muted small'}, (it.from ? 'Les lignes grisées viennent du produit existant : vous pouvez les barrer, pas les modifier. ' : '') + 'Une nouvelle ligne s\'ajoute dès que vous écrivez dans la dernière. Glissez la poignée ⠿ pour réordonner vos lignes.'));
+  TABLES.push({id: it.id, refresh});
+  return box;
+}
+/* Tableau comparatif : une colonne par produit, une ligne par critère (critères fournis, plus ceux que le groupe ajoute). */
+function matrixField(it, ro) {
+  const M = it.matrix, n = M.cols || 6, body = el('tbody'), extra = el('tbody'), trs = new Map(); let ghost = null;
+  const key = (r, k) => it.id + '/' + r + '/' + k, cols = Array.from({length: n}, (_, j) => 'c' + (j + 1));
+  const box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)})));
+  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill matrix'}, el('thead', null, el('tr', null, el('th', {class: 'crit'}, 'Critère'), cols.map((c, j) => el('th', null, (M.colLabel || 'Produit') + ' ' + (j + 1))), ro ? null : el('th', {class: 'act'}))), body, extra)));
+  (M.rows || []).forEach(row => body.append(el('tr', null, el('th', {class: 'crit', scope: 'row'}, row.label), cols.map((c, j) => el('td', null, cellInput(key(row.k, c), ro, {label: row.label + ', ' + (M.colLabel || 'Produit') + ' ' + (j + 1)}, v => setAns(key(row.k, c), v)))), ro ? null : el('td', {class: 'act'}))));
+  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); } } }
+  function addTr(r) {
+    const tr = el('tr'); trs.set(r, tr);
+    tr.append(el('th', {class: 'crit', scope: 'row'}, cellInput(key(r, 'label'), ro, {label: 'Nouveau critère', ph: 'Nouveau critère'}, v => { ensure(r); setAns(key(r, 'label'), v); })));
+    cols.forEach((c, j) => tr.append(el('td', null, cellInput(key(r, c), ro, {label: 'Critère ajouté, ' + (M.colLabel || 'Produit') + ' ' + (j + 1)}, v => { ensure(r); setAns(key(r, c), v); }))));
+    if (!ro) tr.append(el('td', {class: 'act'}, el('button', {class: 'btn x', type: 'button', title: 'Supprimer ce critère', 'aria-label': 'Supprimer ce critère', onclick: () => { if (r === ghost) return; const m = ansOf(key(r, '_')) || {o: Date.now()}; setAns(key(r, '_'), {o: m.o, d: true}); refresh(); }}, '✕')));
+    extra.append(tr); requestAnimationFrame(() => tr.querySelectorAll('textarea').forEach(autoGrow));
+  }
+  function addGhost() { if (ro) return; ghost = rid(); addTr(ghost); }
+  function refresh() {
+    const rows = tableRows(ansOf, S.A.keys(), it.id), ids = new Set(rows.map(r => r.rid));
+    for (const [r, tr] of trs) if (!ids.has(r) && r !== ghost && !tr.contains(document.activeElement)) { tr.remove(); trs.delete(r); ['label', ...cols].forEach(c => FIELDS.delete(key(r, c))); }
+    for (const r of rows) if (!trs.has(r.rid)) addTr(r.rid);
+    if (ghost && trs.get(ghost) && extra.lastChild !== trs.get(ghost)) extra.append(trs.get(ghost));
+  }
+  refresh(); addGhost();
+  requestAnimationFrame(() => body.querySelectorAll('textarea').forEach(autoGrow));
+  if (!ro) box.append(el('p', {class: 'muted small'}, 'Une colonne par produit. Pour ajouter un critère de comparaison, écrivez son nom dans la dernière ligne.'));
   TABLES.push({id: it.id, refresh});
   return box;
 }
@@ -1340,7 +1424,7 @@ function adminLogin(msg) {
   const root = $('#app'); root.className = ''; root.textContent = ''; document.querySelectorAll('.drawer,.veil').forEach(x => x.remove());
   const err = el('p', {class: 'note err', hidden: !msg}, msg || ''), code = el('input', {type: 'password', autocomplete: 'off', placeholder: 'Code enseignant', 'aria-label': 'Code enseignant'});
   const go = el('button', {class: 'btn cta', type: 'submit'}, 'Entrer');
-  root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace étudiant')),
+  root.append(el('div', {class: 'wrap'}, el('div', {class: 'row'}, logoEl(), el('span', {class: 'grow'}), el('a', {class: 'small muted', href: '#', onclick: () => setTimeout(() => location.reload(), 0)}, 'Espace étudiant')),
     el('form', {class: 'stack', style: 'margin-top:8vh;max-width:420px', onsubmit: async e => {
       e.preventDefault(); go.disabled = true; err.hidden = true;
       try { const r = await api('cours_admin_login', {p_code: code.value}); if (!r.ok) throw new Error(r.error); AD.tok = r.token; LS.set('atok', r.token); adminStart(); }
@@ -1390,7 +1474,7 @@ function adminRender() {
   const root = $('#app'); root.className = ''; root.textContent = '';
   const tabs = el('div', {class: 'tabs'}, [['promo', 'Promo'], ['cours', 'Cours et ressources'], ['codes', 'Codes et étudiants']].map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: () => { AD.tab = k; adminRender(); }}, l)));
   root.append(el('div', {class: 'adm'},
-    el('header', {class: 'hdr'}, el('span', {class: 'logo-txt'}, 'Fluidy'), el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, 'Backoffice · ' + (AD.st.admin || '')), el('b', {id: 'adm-title'})),
+    el('header', {class: 'hdr'}, logoEl(), el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, 'Backoffice · ' + (AD.st.admin || '')), el('b', {id: 'adm-title'})),
       el('div', {class: 'hdr-tools'}, tabs, el('button', {class: 'btn sm', onclick: () => { api('cours_logout', {p_token: AD.tok}).catch(() => {}); adminLogin(); }}, 'Quitter'))),
     el('p', {class: 'note err', id: 'adm-err', hidden: true}),
     el('section', {class: 'ctl', id: 'adm-ctl'}), el('section', {id: 'adm-body', class: 'adm-body'})));
@@ -1506,7 +1590,8 @@ function drawerPaint() {
   // Accès
   b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Accès'), el('div', {class: 'row'}, el('span', null, 'Code personnel : ', el('code', {class: 'copyable'}, u.code)), el('span', {class: 'small muted'}, u.sessions + ' appareil(s) connecté(s)'),
     el('button', {class: 'btn sm', onclick: () => confirmBox('Générer un nouveau code ?', 'L\'ancien code ne marchera plus et les appareils de ' + u.prenom + ' sont déconnectés.', 'Nouveau code', run(() => aset('regen_code', {student: u.id})))}, 'Nouveau code'),
-    el('button', {class: 'btn sm', onclick: run(() => aset('revoke', {student: u.id}))}, 'Déconnecter ses appareils'))));
+    el('button', {class: 'btn sm', onclick: run(() => aset('revoke', {student: u.id}))}, 'Déconnecter ses appareils'),
+    el('button', {class: 'btn sm danger', onclick: () => confirmBox('Remettre ' + u.prenom + ' ' + u.nom + ' à zéro ?', 'Pour le cours « ' + ((aCourse() || {}).title || '') + ' » : son projet, ses réponses, ses journaux et ses dépôts sont effacés, ses appareils sont déconnectés et il redevient « Jamais connecté ». Ses invités éventuels retournent dans leur propre projet. Son code personnel ne change pas. Cette action ne peut pas être annulée.', 'Remettre à zéro', async () => { await aapi('cours_admin_reset', {p_course: st.course_id, p_student: u.id}); closeDrawer(); await adminPoll(false); adminPaint(true); toast(u.prenom + ' ' + u.nom + ' a été remis à zéro.'); }, true)}, 'Remettre à zéro'))));
   // Remarque
   const remk = (o.list || []).find(x => x.course_id === o.course), rem = el('textarea', {'aria-label': 'Remarque', placeholder: 'Remarque libre pour ce cours', style: 'min-height:60px'});
   rem.value = cur ? (u.remark || '') : ((remk && remk.remark) || '');
@@ -1539,15 +1624,24 @@ function drawerPaint() {
         sec.append(it.kind === 'code' || it.kind === 'short' ? el('div', {class: 'ans' + (it.kind === 'code' ? ' code' : '')}, (a && a.v) || '') : el('div', {class: 'ans rich-view', html: sanitize((a && a.v) || '')}));
         if (a) sec.append(el('div', {class: 'row small muted'}, 'Modifié à ' + fmtClock(a.at) + ' par ' + who(a.by) + ' · ' + a.n + ' version(s)', el('button', {class: 'btn quiet sm', onclick: () => historyModal(g.id, it, who)}, 'Historique')));
       } else if (it.t === 'table') {
-        const rows = tableRows(get, [...A.keys()], it.id);
-        if (!rows.length) sec.append(el('div', {class: 'ans'}));
-        else {
-          const tot = {};
-          const tb = el('tbody', null, rows.map(r => el('tr', null, it.cols.map(cc => { let v; if (cc.kind === 'mul') { const x = get(it.id + '/' + r.rid + '/' + cc.of[0]), y = get(it.id + '/' + r.rid + '/' + cc.of[1]); v = filled(x) && filled(y) ? num(x) * num(y) : null; if (v != null) tot[cc.k] = (tot[cc.k] || 0) + v; v = v == null ? '' : fmtNum(v); } else v = get(it.id + '/' + r.rid + '/' + cc.k) || ''; return el('td', {class: cc.kind === 'num' || cc.kind === 'mul' ? 'n' : ''}, v); }))));
-          if (it.cols.some(cc => cc.sum)) tb.append(el('tr', null, it.cols.map((cc, j) => el('td', {class: 'n', style: 'font-weight:600'}, cc.sum ? fmtNum(tot[cc.k] || 0) : (j === 0 ? 'Total' : '')))));
-          sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, it.cols.map(cc => el('th', null, cc.label)))), tb)));
-          sec.append(el('div', {class: 'row small muted'}, rows.length + ' ligne(s)', el('button', {class: 'btn quiet sm', onclick: () => historyModal(g.id, it, who)}, 'Historique')));
+        const keys = [...A.keys()], rows = tableRows(get, keys, it.id), any = keys.some(k => k.startsWith(it.id + '/'));
+        if (it.matrix) {
+          const cols = Array.from({length: it.matrix.cols || 6}, (_, j) => 'c' + (j + 1));
+          const line = (label, r) => el('tr', null, el('td', {style: 'font-weight:600'}, label), cols.map(cc => el('td', null, get(it.id + '/' + r + '/' + cc) || '')));
+          sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, el('th', null, 'Critère'), cols.map((cc, j) => el('th', null, (it.matrix.colLabel || 'Produit') + ' ' + (j + 1))))),
+            el('tbody', null, (it.matrix.rows || []).map(r => line(r.label, r.k)), rows.map(r => line((get(it.id + '/' + r.rid + '/label') || '(critère sans nom)') + ' (ajouté)', r.rid))))));
+        } else {
+          const src = it.from ? tableRows(get, keys, it.from) : [], tot = {};
+          const cell = (base, r, cc, count) => { let v; if (cc.kind === 'mul') { const x = get(base + '/' + r + '/' + cc.of[0]), y = get(base + '/' + r + '/' + cc.of[1]); v = filled(x) && filled(y) ? num(x) * num(y) : null; } else v = get(base + '/' + r + '/' + cc.k) || ''; if (count && cc.sum) tot[cc.k] = (tot[cc.k] || 0) + (cc.kind === 'mul' ? (v || 0) : num(v)); return el('td', {class: cc.kind === 'num' || cc.kind === 'mul' ? 'n' : ''}, cc.kind === 'mul' ? (v == null ? '' : fmtNum(v)) : v); };
+          if (!rows.length && !src.length) sec.append(el('div', {class: 'ans'}));
+          else {
+            const tb = el('tbody', null, src.map(r => { const x = !!get(it.id + '/' + r.rid + '/x'); return el('tr', {class: 'inh-row' + (x ? ' struck' : '')}, it.cols.map(cc => cell(it.from, r.rid, cc, !x)), el('td', {class: 'small muted'}, x ? 'barrée' : 'existant')); }),
+              rows.map(r => el('tr', null, it.cols.map(cc => cell(it.id, r.rid, cc, true)), it.from ? el('td', {class: 'small muted'}, 'ajoutée') : null)));
+            if (it.cols.some(cc => cc.sum)) tb.append(el('tr', null, it.cols.map((cc, k) => el('td', {class: 'n', style: 'font-weight:600'}, cc.sum ? fmtNum(tot[cc.k] || 0) : (k === 0 ? 'Total' : ''))), it.from ? el('td') : null));
+            sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, it.cols.map(cc => el('th', null, cc.label)), it.from ? el('th') : null)), tb)));
+          }
         }
+        if (any) sec.append(el('div', {class: 'row small muted'}, rows.length + ' ligne(s) saisie(s)', el('button', {class: 'btn quiet sm', onclick: () => historyModal(g.id, it, who)}, 'Historique')));
       } else {
         const fs = files.filter(f => f.item === it.id);
         if (!fs.length) sec.append(el('div', {class: 'ans'}));
