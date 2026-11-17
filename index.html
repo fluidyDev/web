@@ -443,7 +443,7 @@ table.fill.matrix th.crit{width:190px}
 .pill.qual.q3{background:#fff6d6;color:#6b5200} .pill.qual.q4{background:#e3f4e8;color:var(--ok)} .pill.qual.q5{background:#c9ecd5;color:#0d5a2e}
 /* Galerie des étudiants */
 .ava.big{width:92px;height:92px;border-radius:16px;font-size:24px} .ava.mid{width:54px;height:54px;border-radius:12px;font-size:15px} .ava.mini{width:28px;height:28px;font-size:10px}
-.gal{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.sgal{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
 .gcard{position:relative;width:148px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px 10px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);text-align:center}
 .gcard.sel{box-shadow:inset 0 0 0 2px var(--accent)}
 .gcard.absent .ava{filter:grayscale(1);opacity:.5}
@@ -497,6 +497,35 @@ table.livs td{vertical-align:top}
 .sub.ver ul{margin:0;padding-left:20px;font-size:13px;line-height:1.55}
 .sub.ver.cur{border-top-color:var(--brand)}
 @media (max-width:899px){.adm-nav{padding-left:16px;padding-right:16px}}
+
+/* ===== Version 2.1 ===== */
+.gmore{position:absolute;top:4px;right:4px;width:26px;height:22px;border:0;border-radius:6px;background:transparent;color:var(--slate);font-size:16px;line-height:14px;font-weight:600;letter-spacing:1px;cursor:pointer;opacity:0;transition:opacity .15s;padding:0 0 6px}
+.gcard:hover .gmore,.gcard:focus-within .gmore,.gmore[aria-expanded=true]{opacity:1}
+.gmore:hover,.gmore:focus-visible{background:var(--wash)}
+@media (hover:none){.gmore{opacity:.7}}
+.gmenu{position:absolute;top:28px;right:4px;z-index:6;min-width:172px;display:flex;flex-direction:column;padding:4px;border-radius:10px;background:#fff;box-shadow:var(--shadow-lg);text-align:left}
+.gmenu button{appearance:none;border:0;background:transparent;font:inherit;font-size:12px;color:var(--ink);text-align:left;padding:7px 10px;border-radius:6px;cursor:pointer}
+.gmenu button:hover,.gmenu button:focus-visible{background:var(--wash);outline:0}
+.sub.first{border-top:0;padding-top:0}
+.seg-p.go{appearance:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.seg-p.go:hover{background:#cfe0ec;box-shadow:inset 0 0 0 2px var(--brand)}
+.seg-p .pbar{display:block;height:5px;border-radius:5px;background:rgba(0,24,40,.14);overflow:hidden;margin-top:4px}
+.seg-p .pbar i{display:block;height:100%;background:var(--accent)}
+.seg-p.cur .pbar{background:rgba(255,255,255,.28)} .seg-p.cur .pbar i{background:#fff}
+.face{position:relative}
+.fhelp{position:absolute;left:-6px;top:-6px;width:18px;height:18px;border-radius:50%;background:#e8742a;color:#fff;font-size:10px;line-height:18px;text-align:center;box-shadow:0 0 0 2px #fff}
+.helpbox{border:0;border-radius:14px;padding:14px 16px;background:#fff7f0;box-shadow:inset 0 0 0 2px #e8742a}
+.helpbox h2{color:#b85a1c;font-size:17px}
+.helplist{display:flex;flex-wrap:wrap;gap:10px}
+.helpitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px rgba(232,116,42,.45);min-width:280px;flex:1 1 280px;max-width:520px}
+.iabox{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:12px;border-top:1px dashed var(--line-strong)}
+.pv{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start}
+.pvlist{display:flex;flex-direction:column;gap:2px;max-height:calc(100vh - 210px);overflow:auto;padding-right:4px}
+.pvlist .eyebrow{margin:10px 0 4px}
+.pvlist button{appearance:none;border:0;background:transparent;font:inherit;font-size:12px;text-align:left;color:var(--slate);padding:6px 9px;border-radius:7px;cursor:pointer;line-height:1.35}
+.pvlist button:hover{background:var(--wash)} .pvlist button[aria-current=true]{background:var(--brand);color:#fff}
+.pvframe{width:100%;height:calc(100vh - 210px);min-height:560px;border:0;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line-strong),var(--shadow);background:#fff}
+@media (max-width:899px){.pv{grid-template-columns:1fr}.pvlist{max-height:180px}}
 
 </style>
 </head>
@@ -649,7 +678,10 @@ function logoEl() { return el('img', {class: 'logo', src: LOGO, alt: 'Fluidy'});
 
 /* ---------- Appels à la base ---------- */
 class ApiError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
+/* Aperçu enseignant : les appels de la page étudiant sont interceptés (rien n'est enregistré). */
+let apiHook = null;
 async function api(fn, args, opts) {
+  if (apiHook) { const h = await apiHook(fn, args || {}); if (h !== undefined) return h; }
   let res;
   try {
     res = await fetch(SUPA + '/rest/v1/rpc/' + fn, {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify(args || {}), keepalive: !!(opts && opts.keepalive)});
@@ -673,6 +705,16 @@ async function getBlob(path) {
   const r = await fetch(SUPA + '/storage/v1/object/authenticated/cours/' + objPath(path), {headers: HEAD});
   if (!r.ok) throw new ApiError('DOWN', 'Téléchargement impossible (' + r.status + ').');
   return r.blob();
+}
+/* Cache durable des fichiers qui ne changent jamais (photos des ressources, vignettes, trombinoscope) :
+   chaque fichier n'est téléchargé qu'une fois par navigateur, même après un rechargement de la page. */
+const FileCache = {
+  async get(id) { try { const c = await caches.open('cours-fichiers-v1'), r = await c.match('/__fichier/' + id); return r ? await r.blob() : null; } catch (e) { return null; } },
+  async put(id, blob) { try { const c = await caches.open('cours-fichiers-v1'); await c.put('/__fichier/' + id, new Response(blob, {headers: {'Content-Type': blob.type || 'application/octet-stream'}})); } catch (e) {} }
+};
+/* Message court envoyé aux pages ouvertes par le canal temps réel (« il y a du nouveau, synchronisez-vous »). */
+function pokeHttp(topic, payload) {
+  return fetch(SUPA + '/realtime/v1/api/broadcast', {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify({messages: [{topic, event: 'poke', payload: payload || {}}]})}).catch(() => {});
 }
 function saveBlob(blob, name) {
   const u = URL.createObjectURL(blob), a = el('a', {href: u, download: name});
@@ -767,8 +809,14 @@ const linkNorm = v => { v = String(v || '').trim(); if (/^www\./i.test(v)) v = '
 const isUrl = v => /^https?:\/\/[^\s<>"']+$/i.test(v);
 
 /* ============ Version de la plateforme et journal des versions ============ */
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const CHANGELOG = [
+  {v: '2.1.0', date: '17/11/2026', title: 'Trafic réduit, pilotage dans le suivi de séance, aperçu du cours', items: [
+    'Trafic sortant fortement réduit : photos des ressources en vignettes légères et gardées en cache par le navigateur ; les pages ne relisent plus la base toutes les 2,5 secondes mais sont prévenues des changements par le canal temps réel ; le backoffice ne relit rien quand il n\'est pas regardé et ne recharge que ce qui a changé.',
+    'Suivi séance : démarrage et fin de séance, changement de rythme en cliquant sur une partie, complétion par partie, demandes d\'aide mises en avant, groupes classés avant le détail des livrables, réglages de la notation par IA.',
+    'Onglet Cours : plus d\'indicateurs chiffrés ; sur chaque tuile, un menu « … » pour commenter ou marquer un absent. Les absents ne figurent plus dans le suivi. Hors séance, seules les demandes d\'aide comptent comme « à assister ».',
+    'Nouvel onglet Preview : tous les écrans du cours, tels que les voient les étudiants.',
+    'Correction : la grille des photos du panneau Ressources, déréglée par la version 2.0.0.']},
   {v: '2.0.0', date: '17/11/2026', title: 'Pilotage de séance, sauvegardes et suivi de la qualité', items: [
     'Backoffice réorganisé : « Cours » (réglages et galerie des étudiants avec trombinoscope), « Suivi séance » (déroulé, complétion et qualité par livrable, classement des groupes), « Étudiants » (tableau détaillé).',
     'Prise de parole : l\'enseignant verrouille tous les écrans le temps d\'une intervention ; les temps additionnels en cours sont mis en pause et reprennent ensuite.',
@@ -875,7 +923,7 @@ try { S.me = JSON.parse(LS.get('me', 'null')); } catch (e) {}
 let FIELDS = new Map(), TABLES = [], UPLOADS = [], SCREENS = {}, syncing = false, syncT = null, flushT = null, lockClose = null, invClose = null, holdClose = null, journalTab = 'bord', loopOn = false;
 /* Activité de l'étudiant sur la page : sans clic ni frappe pendant 30 minutes, la session est fermée. */
 const IDLE_MS = 30 * 60000;
-let lastAct = Date.now(), actFlag = true, idleAck = null;
+let lastAct = Date.now(), actFlag = true, idleAck = null, lastSync = 0, syncH = null;
 ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => window.addEventListener(ev, () => { lastAct = Date.now(); actFlag = true; }, {passive: true, capture: true}));
 const seenInv = new Set(), blobCache = new Map();
 const ui = {left: LS.get('left', '1') === '1', right: LS.get('right', '1') === '1', nleft: false, nright: false, wl: +LS.get('wl', 330) || 330, wr: +LS.get('wr', 360) || 360};
@@ -944,7 +992,7 @@ function loginScreen(root) {
 function logout(expired, why) {
   const t = S.tok; S.tok = null; LS.set('tok', null); LS.set('me', null);
   if (t && !expired) api('cours_logout', {p_token: t}).catch(() => {});
-  S.sy = null; S.course = null; S.A.clear(); S.dirty.clear(); S.J = []; S.F.clear(); S.since = 0; S.gid = null; S.part = null; S.sig = ''; S.students = null; yReset(); rtLeave();
+  S.sy = null; S.course = null; S.A.clear(); S.dirty.clear(); S.J = []; S.F.clear(); S.since = 0; syncH = null; S.gid = null; S.part = null; S.sig = ''; S.students = null; yReset(); rtLeave();
   document.querySelectorAll('.veil').forEach(v => v.remove()); lockClose = null; invClose = null; holdClose = null; idleAck = null;
   document.querySelectorAll('.idlebar').forEach(v => v.remove()); const app = $('#app'); if (app) app.inert = false;
   S.notice = why || (expired ? 'Votre session a été fermée : reconnectez-vous.' : null);
@@ -955,23 +1003,46 @@ function logout(expired, why) {
 /* ---------- Synchronisation ---------- */
 function startLoop() {
   if (loopOn) return; loopOn = true;
-  const tick = async () => { if (!S.tok) { loopOn = false; return; } await syncOnce(); syncT = setTimeout(tick, document.hidden ? 15000 : (S.view === 'closed' ? 6000 : 2500)); };
+  const tick = async () => { if (!S.tok || S.preview) { loopOn = false; return; } if (Date.now() - lastSync > 1500) await syncOnce(); syncT = setTimeout(tick, syncDelay()); };
   syncT = setTimeout(tick, 2500);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && S.tok) { clearTimeout(syncT); tick(); } else if (document.hidden) { flush(true); yFlushAll(true); } });
   window.addEventListener('pagehide', () => { flush(true); yFlushAll(true); });
 }
 let soonT = null;
 function syncSoon() { clearTimeout(soonT); soonT = setTimeout(syncOnce, 250); }
+/* Cadence de la synchronisation de fond. Les changements (coéquipier, enseignant) sont annoncés par le canal temps réel :
+   la relecture régulière n'est qu'un filet de sécurité, sauf si ce canal est coupé. */
+function syncDelay() {
+  if (document.hidden) return 30000;
+  if (S.view === 'closed') return 8000;
+  const mates = S.sy ? S.sy.group.members.filter(m => m.id !== S.me.id && m.online).length : 0;
+  if (!(RT && RT.ok) && mates) return 2500;
+  return 8000;
+}
+/* Annonce reçue : on se resynchronise, au plus une fois toutes les 2 secondes. */
+function onPoke(p) {
+  if (!S.tok || S.preview) return;
+  if (p && p.to && p.to !== S.me.id) return;
+  if (p && p.from === S.me.id) return;
+  // Annonce de l'enseignant ou de la classe : tout de suite, avec un léger étalement. Annonce d'un coéquipier : au plus une relecture toutes les 2 s.
+  clearTimeout(soonT); soonT = setTimeout(syncOnce, p && p.all ? 100 + Math.random() * 600 : Math.max(250, 2000 - (Date.now() - lastSync)));
+}
+/* Annonce aux coéquipiers (canal du projet) ou à un étudiant précis (canal de la classe). */
+function pokeMates() { if (RT && RT.ok && S.sy && S.sy.group.members.length > 1) try { RT.ch.send({type: 'broadcast', event: 'poke', payload: {from: S.me.id}}); } catch (x) {} }
+function pokeClass() { if (RT && RT.cls) try { RT.cls.send({type: 'broadcast', event: 'poke', payload: {all: true, from: S.me.id}}); } catch (x) {} }
+function pokeStudent(id) { if (RT && RT.cls) try { RT.cls.send({type: 'broadcast', event: 'poke', payload: {to: id, from: S.me.id}}); } catch (x) {} }
 async function syncOnce() {
-  if (syncing || !S.tok) return;
+  if (syncing || !S.tok || S.preview) return;
   if (Date.now() - lastAct > IDLE_MS) { await flush(); await yFlushAll(); return logout(false, 'Vous avez été déconnecté après 30 minutes sans activité. Vos réponses sont enregistrées : reconnectez-vous pour continuer.'); }
   syncing = true;
   const act = actFlag; actFlag = false;
   try {
     const part = S.view === 'main' || S.view === 'done' ? curPart() : null;
-    const r = await api('cours_sync2', {p_token: S.tok, p_since: S.since, p_state: {part: part ? part.id : null, screen: S.screen, editing: S.focus, act}, p_ysince: S.ysince});
+    const r = await api('cours_sync2', {p_token: S.tok, p_since: S.since, p_state: {part: part ? part.id : null, screen: S.screen, editing: S.focus, act, h: syncH}, p_ysince: S.ysince});
+    lastSync = Date.now();
     if (!S.net) { S.net = true; paintSave(); }
-    await applySync(r);
+    if (r.same && S.sy) { S.sy.now = r.now; paintChip(); }
+    else { syncH = r.h || null; await applySync(r); }
   } catch (e) {
     if (act) actFlag = true;
     if (e.code === 'AUTH') { syncing = false; return logout(true, e.message); }
@@ -990,6 +1061,7 @@ async function applySync(r) {
   if (S.gid !== r.group.id) {
     if (S.gid) toast('Vous travaillez maintenant dans un autre projet.');
     S.gid = r.group.id; S.A.clear(); S.dirty.clear(); S.J = []; S.F.clear(); S.sig = ''; yReset();
+    syncH = null;
     if (S.since !== 0 || S.ysince !== 0) { S.since = 0; S.ysince = 0; again = true; }
   }
   const changed = [];
@@ -1046,8 +1118,9 @@ async function flush(keepalive) {
     if (r.rejected && r.rejected.length) {
       toast(r.rejected.some(x => x.why === 'verrou') ? 'Cette partie est en lecture seule : la modification n\'a pas été enregistrée.' : 'Une réponse n\'a pas pu être enregistrée.', 'err');
       for (const x of r.rejected) S.A.delete(x.id);
-      S.since = 0; S.sig = ''; syncSoon();
+      S.since = 0; S.sig = ''; syncH = null; syncSoon();
     }
+    pokeMates();
     S.save = 'saved'; paintSave();
     if (S.dirty.size) flushT = setTimeout(flush, 600);
   } catch (e) {
@@ -1086,7 +1159,7 @@ function render() {
   const center = el('main', {class: 'center'}); cols.append(center);
   if (S.view === 'done') doneScreen(center); else screenView(center);
   if (paneOpen('right')) { if (!narrow()) cols.append(split('r')); host.append(resPane()); }
-  paintPresence(); paintChip(); paintSave();
+  paintPresence(); paintChip(); paintSave(); previewTell();
 }
 function header(root) {
   const h = el('header', {class: 'hdr'}); h.append(logoEl());
@@ -1096,13 +1169,13 @@ function header(root) {
   if (S.sy.group.finished_at) tools.append(el('span', {class: 'pill ok'}, 'Exercice terminé'));
   if (p) tools.append(el('span', {class: 'chip', id: 'chip', role: 'timer'}));
   tools.append(el('span', {class: 'save', id: 'save'}));
-  tools.append(el('button', {class: 'btn sm', type: 'button', id: 'btn-help', onclick: helpClick}));
-  tools.append(el('button', {class: 'btn sm', type: 'button', id: 'btn-group', onclick: groupModal}));
+  if (S.preview) tools.append(el('span', {class: 'pill warn'}, 'Aperçu enseignant · rien n\'est enregistré'));
+  else tools.append(el('button', {class: 'btn sm', type: 'button', id: 'btn-help', onclick: helpClick}), el('button', {class: 'btn sm', type: 'button', id: 'btn-group', onclick: groupModal}));
   if (p) {
     tools.append(el('button', {class: 'btn sm', type: 'button', 'aria-pressed': String(paneOpen('left')), onclick: () => togglePane('left')}, 'Journaux'));
     tools.append(el('button', {class: 'btn sm', type: 'button', 'aria-pressed': String(paneOpen('right')), onclick: () => togglePane('right')}, 'Ressources'));
   }
-  tools.append(el('button', {class: 'btn sm', type: 'button', title: S.me.prenom + ' ' + S.me.nom, onclick: () => confirmBox('Se déconnecter ?', 'Vos réponses restent enregistrées. Il faudra votre code personnel pour revenir.', 'Se déconnecter', async () => { await flush(); await yFlushAll(); logout(); })}, 'Quitter'));
+  if (!S.preview) tools.append(el('button', {class: 'btn sm', type: 'button', title: S.me.prenom + ' ' + S.me.nom, onclick: () => confirmBox('Se déconnecter ?', 'Vos réponses restent enregistrées. Il faudra votre code personnel pour revenir.', 'Se déconnecter', async () => { await flush(); await yFlushAll(); logout(); })}, 'Quitter'));
   root.append(h); paintGroupBtn(); paintHelp();
 }
 function paintGroupBtn() {
@@ -1192,7 +1265,7 @@ function screenView(center) {
     else if (it.t === 'upload') scr.append(uploadField(it, ro));
   }
   if (!sc.items.length) scr.append(el('p', {class: 'muted'}, 'Cette partie n\'a pas encore de contenu.'));
-  scr.addEventListener('focusin', e => { const t = e.target.closest('[data-item]'); const f = t ? t.dataset.item : null; if (f !== S.focus) { S.focus = f; syncSoon(); } });
+  scr.addEventListener('focusin', e => { const t = e.target.closest('[data-item]'); const f = t ? t.dataset.item : null; if (f !== S.focus) { S.focus = f; if (S.sy && S.sy.group.members.length > 1) { syncSoon(); setTimeout(pokeMates, 600); } } });
   scr.addEventListener('focusout', () => { setTimeout(() => { const a = document.activeElement, t = a && a.closest && a.closest('[data-item]'); if (!t && S.focus) { S.focus = null; flush(); syncSoon(); } }, 0); });
   const lastPart = S.part === parts().length - 1, lastScr = S.screen === scs.length - 1;
   const dots = el('div', {class: 'dots'});
@@ -1421,7 +1494,7 @@ function uploadField(it, ro) {
       try {
         const t = await api('cours_upload_start', {p_token: S.tok, p_item: it.id, p_name: f.name, p_size: f.size, p_mime: f.type || ''});
         await putFile(t.path, f);
-        await api('cours_upload_done', {p_token: S.tok, p_file: t.id});
+        await api('cours_upload_done', {p_token: S.tok, p_file: t.id}); pokeMates();
         state.textContent = '';
       } catch (e) { state.textContent = ''; toast(f.name + ' : ' + e.message, 'err'); }
     }
@@ -1435,7 +1508,7 @@ function uploadField(it, ro) {
     const fs = [...S.F.values()].filter(f => f.item === it.id && !f.deleted).sort((a, b) => a.at < b.at ? -1 : 1);
     if (!fs.length) list.append(el('p', {class: 'muted small'}, 'Aucun fichier déposé.'));
     fs.forEach(f => list.append(el('div', {class: 'file'}, el('button', {class: 'btn quiet', type: 'button', onclick: () => download(f)}, f.name), el('span', {class: 'small muted grow'}, fmtSize(f.size) + ' · ' + nameOf(f.by, true) + ' · ' + fmtTime(f.at)),
-      ro ? null : el('button', {class: 'btn sm', type: 'button', onclick: () => confirmBox('Retirer ce fichier ?', f.name + ' ne fera plus partie du rendu. Il reste conservé dans l\'historique.', 'Retirer', async () => { await api('cours_file_delete', {p_token: S.tok, p_file: f.id}); await syncOnce(); refresh(); })}, 'Retirer'))));
+      ro ? null : el('button', {class: 'btn sm', type: 'button', onclick: () => confirmBox('Retirer ce fichier ?', f.name + ' ne fera plus partie du rendu. Il reste conservé dans l\'historique.', 'Retirer', async () => { await api('cours_file_delete', {p_token: S.tok, p_file: f.id}); pokeMates(); await syncOnce(); refresh(); })}, 'Retirer'))));
   }
   refresh(); UPLOADS.push({id: it.id, refresh});
   return box;
@@ -1454,14 +1527,14 @@ function paintPresence() {
 /* ---------- Fin d'exercice ---------- */
 function finishAsk() {
   if (S.sy.group.finished_at) { S.view = 'done'; return render(); }
-  confirmBox('Terminer l\'exercice ?', 'L\'enseignant verra votre projet comme terminé. Vous pourrez encore modifier vos réponses tant que le cours est en ligne.', 'Terminer', async () => { await flush(); await yFlushAll(); await api('cours_finish', {p_token: S.tok, p_done: true}); S.view = 'done'; await syncOnce(); render(); });
+  confirmBox('Terminer l\'exercice ?', 'L\'enseignant verra votre projet comme terminé. Vous pourrez encore modifier vos réponses tant que le cours est en ligne.', 'Terminer', async () => { await flush(); await yFlushAll(); await api('cours_finish', {p_token: S.tok, p_done: true}); pokeMates(); S.view = 'done'; await syncOnce(); render(); });
 }
 function doneScreen(center) {
   const scr = el('div', {class: 'screen top'}, el('h1', null, 'Exercice terminé'), el('p', {class: 'big'}, 'Merci. Voici ce que contient votre rendu. Vous pouvez encore le modifier tant que le cours est en ligne.'));
   const tb = el('tbody');
   parts().forEach((p, i) => { const its = p.items.filter(x => ANSWERABLE.includes(x.t)), ok = its.filter(screenDone).length; tb.append(el('tr', null, el('td', null, (i + 1) + '. ' + p.title), el('td', {class: 'n'}, ok + ' / ' + its.length), el('td', null, el('button', {class: 'btn sm', onclick: () => goPart(i, 0)}, 'Ouvrir')))); });
   scr.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, el('th', null, 'Partie'), el('th', {class: 'n'}, 'Réponses remplies'), el('th'))), tb)));
-  scr.append(el('div', {class: 'row'}, el('button', {class: 'btn', onclick: async () => { await api('cours_finish', {p_token: S.tok, p_done: false}); await syncOnce(); goPart(S.part, S.screen); }}, 'Rouvrir l\'exercice')));
+  scr.append(el('div', {class: 'row'}, el('button', {class: 'btn', onclick: async () => { await api('cours_finish', {p_token: S.tok, p_done: false}); pokeMates(); await syncOnce(); goPart(S.part, S.screen); }}, 'Rouvrir l\'exercice')));
   center.append(el('div', {class: 'center-scroll'}, scr));
 }
 
@@ -1553,7 +1626,7 @@ function checkInvites() {
     const err = el('p', {class: 'note err', hidden: true});
     b.append(el('h2', null, inv.from + ' vous invite dans son projet'),
       el('p', null, 'En acceptant, vous travaillerez dans les réponses de son projet : un seul rendu pour le groupe. Ce que vous avez déjà écrit de votre côté est conservé, mais mis de côté.'), err,
-      el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: async () => { try { await flush(); await yFlushAll(); await api('cours_invite_answer', {p_token: S.tok, p_invite: inv.id, p_accept: true}); done(); await syncOnce(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Rejoindre le projet'),
+      el('div', {class: 'row'}, el('button', {class: 'btn pri', onclick: async () => { try { await flush(); await yFlushAll(); await api('cours_invite_answer', {p_token: S.tok, p_invite: inv.id, p_accept: true}); pokeClass(); done(); await syncOnce(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Rejoindre le projet'),
         el('button', {class: 'btn', onclick: async () => { try { await api('cours_invite_answer', {p_token: S.tok, p_invite: inv.id, p_accept: false}); } catch (e) {} done(); }}, 'Refuser')));
   }, {sticky: true, onclose: () => { invClose = null; setTimeout(checkInvites, 300); }});
 }
@@ -1567,14 +1640,14 @@ async function groupModal() {
       b.append(el('h2', null, 'Mon projet'), el('p', {class: 'muted'}, g.members.length > 1 ? 'Un seul rendu pour le projet : tous les membres écrivent dans les mêmes réponses.' : 'Vous travaillez seul. Vous pouvez inviter 1 à 2 camarades : ils écriront avec vous dans les mêmes réponses.'));
       g.members.forEach(m => b.append(el('div', {class: 'file'}, el('span', {class: 'dot-on' + (m.online || m.id === S.me.id ? ' on' : '')}), el('b', {class: 'grow'}, m.prenom + ' ' + m.nom + (m.id === S.me.id ? ' (vous)' : '')),
         el('span', {class: 'pill'}, m.role === 'principal' ? 'Principal' : 'Invité'),
-        me.role === 'principal' && m.role === 'invite' ? el('button', {class: 'btn sm', onclick: run(() => api('cours_group_remove', {p_token: S.tok, p_student: m.id}))}, 'Retirer') : null)));
+        me.role === 'principal' && m.role === 'invite' ? el('button', {class: 'btn sm', onclick: run(async () => { await api('cours_group_remove', {p_token: S.tok, p_student: m.id}); pokeStudent(m.id); pokeMates(); })}, 'Retirer') : null)));
       S.sy.invites_out.forEach(i => b.append(el('div', {class: 'file'}, el('span', {class: 'grow muted'}, i.to + ' · invitation envoyée, en attente'), me.role === 'principal' ? el('button', {class: 'btn sm', onclick: run(() => api('cours_invite_cancel', {p_token: S.tok, p_invite: i.id}))}, 'Annuler') : null)));
       if (me.role === 'principal' && g.members.length + S.sy.invites_out.length < 3) {
         const taken = new Set([...g.members.map(m => m.id), ...S.sy.invites_out.map(i => i.to_id)]);
         const sel = el('select', {'aria-label': 'Camarade à inviter'}, el('option', {value: ''}, 'Choisir un camarade…'), (S.students || []).filter(s => !taken.has(s.id)).map(s => el('option', {value: s.id}, s.nom + ' ' + s.prenom)));
-        b.append(el('div', {class: 'row'}, el('div', {class: 'grow'}, sel), el('button', {class: 'btn pri', onclick: run(async () => { if (sel.value) await api('cours_invite', {p_token: S.tok, p_to: sel.value}); })}, 'Inviter')));
+        b.append(el('div', {class: 'row'}, el('div', {class: 'grow'}, sel), el('button', {class: 'btn pri', onclick: run(async () => { if (sel.value) { await api('cours_invite', {p_token: S.tok, p_to: sel.value}); pokeStudent(sel.value); } })}, 'Inviter')));
       }
-      if (me.role === 'invite') b.append(el('div', {class: 'row'}, el('button', {class: 'btn danger', onclick: () => confirmBox('Quitter ce projet ?', 'Vous retrouverez votre projet personnel, avec ce que vous y aviez écrit. Le projet du groupe reste à ses autres membres.', 'Quitter le projet', async () => { await flush(); await yFlushAll(); await api('cours_group_leave', {p_token: S.tok}); close(); await syncOnce(); }, true)}, 'Quitter ce projet')));
+      if (me.role === 'invite') b.append(el('div', {class: 'row'}, el('button', {class: 'btn danger', onclick: () => confirmBox('Quitter ce projet ?', 'Vous retrouverez votre projet personnel, avec ce que vous y aviez écrit. Le projet du groupe reste à ses autres membres.', 'Quitter le projet', async () => { await flush(); await yFlushAll(); await api('cours_group_leave', {p_token: S.tok}); pokeClass(); close(); await syncOnce(); }, true)}, 'Quitter ce projet')));
       b.append(err, el('div', {class: 'row'}, el('button', {class: 'btn', onclick: close}, 'Fermer')));
     };
     paint();
@@ -1589,7 +1662,7 @@ function journalPane() {
   pane.append(el('div', {class: 'pane-h'}, tabs, el('span', {class: 'grow'}), narrow() ? el('button', {class: 'btn x', 'aria-label': 'Fermer', onclick: () => togglePane('left')}, '✕') : null));
   const body = el('div', {class: 'pane-b'}), list = el('div', {class: 'stack', id: 'jlist'});
   pane.append(body);
-  const add = async (kind, data, after) => { try { const p = curPart(); await api('cours_journal_add', {p_token: S.tok, p_kind: kind, p_part: p ? p.id : null, p_ref: curRef(), p_data: data}); after(); await syncOnce(); } catch (e) { toast(e.message, 'err'); } };
+  const add = async (kind, data, after) => { try { const p = curPart(); await api('cours_journal_add', {p_token: S.tok, p_kind: kind, p_part: p ? p.id : null, p_ref: curRef(), p_data: data}); pokeMates(); after(); await syncOnce(); } catch (e) { toast(e.message, 'err'); } };
   if (journalTab === 'bord') {
     const ed = richEditor('_journal', false, {ph: 'Ce que vous faites, ce qui bloque, vos décisions…', cls: 'journal'});
     const stamp = () => { const q = ed.quill, r = q.getSelection(true), t = '[' + fmtTime(Date.now()) + ' · ' + curRef() + '] ', i = r ? r.index : Math.max(0, q.getLength() - 1); q.insertText(i, t, 'user'); q.setSelection(i + t.length, 0, 'user'); };
@@ -1703,13 +1776,15 @@ function richEditor(item, ro, opts) {
 }
 /* Canal temps réel : un canal par projet, au nom non devinable. */
 function rtJoin() {
-  if (!window.Collab || !S.gid || (RT && RT.gid === S.gid)) return;
+  if (!window.Collab || !S.gid || S.preview || (RT && RT.gid === S.gid)) return;
   rtLeave();
   try {
     const client = new Collab.RealtimeClient(SUPA.replace(/^http/, 'ws') + '/realtime/v1', {params: {apikey: KEY}, vsn: '1.0.0'});
     const ch = client.channel('cours-' + S.gid, {config: {broadcast: {self: false, ack: false}}});
-    RT = {client, ch, gid: S.gid, ok: false};
-    ch.on('broadcast', {event: 'y'}, m => rtIn(m.payload)).subscribe(st => { if (RT && RT.ch === ch) RT.ok = st === 'SUBSCRIBED'; });
+    const cls = client.channel('cours-classe-' + S.course.id, {config: {broadcast: {self: false, ack: false}}});
+    RT = {client, ch, cls, gid: S.gid, ok: false};
+    ch.on('broadcast', {event: 'y'}, m => rtIn(m.payload)).on('broadcast', {event: 'poke'}, m => onPoke(m.payload)).subscribe(st => { if (RT && RT.ch === ch) RT.ok = st === 'SUBSCRIBED'; });
+    cls.on('broadcast', {event: 'poke'}, m => onPoke(m.payload)).subscribe();
   } catch (x) { RT = null; }
 }
 function rtLeave() { if (!RT) return; const r = RT; RT = null; try { r.client.removeAllChannels(); r.client.disconnect(); } catch (x) {} }
@@ -1734,7 +1809,7 @@ function flushOut() {
 
 /* ---------- Ressources ---------- */
 function blobUrl(f, ticketFn) {
-  if (!blobCache.has(f.id)) blobCache.set(f.id, (async () => { const t = await ticketFn(f); return URL.createObjectURL(await getBlob(t.path)); })().catch(e => { blobCache.delete(f.id); throw e; }));
+  if (!blobCache.has(f.id)) blobCache.set(f.id, (async () => { let b = await FileCache.get(f.id); if (!b) { const t = await ticketFn(f); b = await getBlob(t.path); FileCache.put(f.id, b); } return URL.createObjectURL(b); })().catch(e => { blobCache.delete(f.id); throw e; }));
   return blobCache.get(f.id);
 }
 const loadQ = (() => { let n = 0; const q = []; const next = () => { if (n >= 3 || !q.length) return; n++; q.shift()().finally(() => { n--; next(); }); }; return fn => { q.push(fn); next(); }; })();
@@ -1762,7 +1837,7 @@ function resPane() {
     }, {wide: true});
     imgs.forEach((f, i) => {
       const im = el('img', {alt: f.name}), cell = el('button', {class: 'gal-i', type: 'button', title: f.name, onclick: () => zoom(i)}, im);
-      grid.append(cell); loadQ(() => blobUrl(f, ticket).then(u => { im.src = u; }).catch(() => { cell.classList.add('ko'); }));
+      grid.append(cell); loadQ(() => blobUrl(f.thumb ? {id: f.thumb} : f, ticket).then(u => { im.src = u; }).catch(() => { cell.classList.add('ko'); }));
     });
     body.append(el('div', {class: 'res'}, el('h3', null, 'Photos du produit (' + imgs.length + ')'), el('p', {class: 'small muted'}, 'Cliquez sur une photo pour l\'agrandir.'), grid));
   }
@@ -1772,12 +1847,69 @@ function resPane() {
 window.addEventListener('resize', (() => { let t, w = window.innerWidth; return () => { clearTimeout(t); t = setTimeout(() => { if ((w < 900) !== (window.innerWidth < 900) && S.view === 'main' && !document.activeElement.closest('[data-item]')) render(); w = window.innerWidth; }, 200); }; })());
 setInterval(() => { if (S.view === 'main') paintChip(); }, 20000);
 
+/* ---------- Aperçu enseignant : la vue étudiant d'un cours, sans rien enregistrer (backoffice, onglet Preview) ---------- */
+function previewTell() {
+  if (!S.preview || window.parent === window) return;
+  try { window.parent.postMessage({coursPreview: S.part == null ? 'w' + S.welcome : 'p' + S.part + 's' + S.screen}, location.origin); } catch (e) {}
+}
+function previewGo() {
+  const q = new URLSearchParams(location.hash.split('?')[1] || ''), n = parts().length;
+  if (q.has('w') && (S.course.content.welcome || []).length) { S.part = null; S.welcome = Math.max(0, Math.min(+q.get('w') || 0, S.course.content.welcome.length - 1)); }
+  else { S.part = Math.max(0, Math.min(+q.get('p') || 0, n - 1)); S.screen = Math.max(0, Math.min(+q.get('s') || 0, screensOf(parts()[S.part]).length - 1)); }
+  S.view = 'main'; S.focus = null; render();
+}
+async function previewStart() {
+  const atok = LS.get('atok', null), q = new URLSearchParams(location.hash.split('?')[1] || ''), root = $('#app');
+  const fail = t => { root.textContent = ''; root.append(el('div', {class: 'wrap'}, el('h1', null, 'Aperçu indisponible'), el('p', {class: 'big muted'}, t))); };
+  if (!atok) return fail('Ouvrez l\'aperçu depuis le backoffice, onglet Preview.');
+  S.preview = true; S.tok = 'apercu'; S.me = {id: 'apercu', nom: '', prenom: 'Aperçu'}; S.gid = 'apercu';
+  let c; try { c = await api('cours_admin_course', {p_token: atok, p_course: q.get('c')}); } catch (e) { return fail(e.message); }
+  S.course = {id: c.id, title: c.title, content: c.content, content_at: c.content_at, resources: c.resources};
+  const now = new Date().toISOString();
+  S.sy = {state: 'open', now, course: {id: c.id, title: c.title, session_active: false, pace_part: 0, pace_log: [], content_at: c.content_at, hold: false}, me: {id: 'apercu', role: 'principal', help: null},
+    group: {id: 'apercu', owner_id: 'apercu', ack_part: 0, overrides: {}, finished_at: null, extra_used: 0, extra_until: null, locked: false, members: [{id: 'apercu', nom: '', prenom: 'Aperçu', role: 'principal', online: true}]},
+    invites_in: [], invites_out: [], answers: [], journal: [], files: [], rev: 0};
+  // Les appels de la page sont interceptés : les saisies restent dans la page, les fichiers du cours passent par l'accès enseignant.
+  apiHook = async (fn, a) => {
+    if (fn.startsWith('cours_admin_')) return undefined;
+    if (fn === 'cours_file_ticket') return api('cours_admin_file_ticket', {p_token: atok, p_file: a.p_file});
+    if (fn === 'cours_save') return {saved: (a.p_items || []).length, rejected: []};
+    if (fn === 'cours_ysave') return {saved: 1, rejected: []};
+    if (fn === 'cours_journal_add') { S.J.push({id: Date.now(), kind: a.p_kind, at: new Date().toISOString(), by: 'apercu', part: a.p_part, ref: a.p_ref, data: a.p_data}); setTimeout(() => paintJournal(), 0); return {id: Date.now()}; }
+    if (fn === 'cours_finish') { S.sy.group.finished_at = a.p_done ? new Date().toISOString() : null; return {ok: true}; }
+    if (fn === 'cours_upload_start') throw new ApiError('RULE', 'Aperçu : le dépôt de fichiers est désactivé.');
+    if (fn === 'cours_students') return [];
+    return {ok: true};
+  };
+  previewGo();
+}
+
 /* ============ Backoffice enseignant ============ */
 const AD = {tok: LS.get('atok', null), st: null, sel: LS.get('acourse', null), tab: 'cours', contents: {}, open: null, timer: null, err: '', filter: '', n: 0, work: null, needOnly: false, gsig: '', backups: null, iaBusy: false};
 const aapi = (fn, args) => api(fn, {p_token: AD.tok, ...(args || {})});
-const aset = (action, args) => aapi('cours_admin_set', {p_action: action, p_args: args || {}});
-const ado = (action, args) => aapi('cours_admin_do', {p_action: action, p_args: args || {}});
-async function loadWork() { if (AD.st && AD.st.course_id) AD.work = await aapi('cours_admin_work', {p_course: AD.st.course_id}); return AD.work; }
+/* Après une action qui concerne les étudiants, leurs pages sont prévenues par le canal temps réel : elles se resynchronisent tout de suite. */
+const POKE = new Set(['publish', 'pause', 'session', 'pace', 'pace_reset', 'override', 'hold', 'detach', 'attach', 'help_clear', 'student_active', 'revoke', 'regen_code']);
+const pokeStudents = () => { const c = AD.st && AD.st.settings.published_course; if (c) pokeHttp('cours-classe-' + c, {all: true}); };
+const aset = (action, args) => aapi('cours_admin_set', {p_action: action, p_args: args || {}}).then(r => { if (POKE.has(action)) pokeStudents(); return r; });
+const ado = (action, args) => aapi('cours_admin_do', {p_action: action, p_args: args || {}}).then(r => { if (POKE.has(action)) pokeStudents(); return r; });
+/* Travail des étudiants (suivi de séance) : seules les réponses modifiées depuis le dernier appel sont rechargées. */
+const actSig = () => AD.st ? AD.st.groups.map(g => g.id + (g.last_activity || '')).sort().join('|') + '#' + AD.st.students.map(u => u.group_id || '').join(',') : '';
+async function loadWork() {
+  if (!AD.st || !AD.st.course_id) return null;
+  const cid = AD.st.course_id, sig = actSig();
+  if (!AD.work || AD.work.course !== cid) AD.work = {course: cid, rev: 0, groups: [], at: 0, sig: ''};
+  const r = await aapi('cours_admin_work2', {p_course: cid, p_since: AD.work.rev}), old = new Map(AD.work.groups.map(g => [g.id, g]));
+  AD.work.groups = r.groups.map(g => { const o = old.get(g.id), ans = o ? o.answers : {}; for (const k in g.answers) { if (g.answers[k] == null) delete ans[k]; else ans[k] = g.answers[k]; } return {...g, answers: ans}; });
+  AD.work.rev = r.rev; AD.work.at = Date.now(); AD.work.sig = sig;
+  return AD.work;
+}
+const workStale = ms => !AD.work || AD.work.course !== AD.st.course_id || (AD.work.sig !== actSig() && Date.now() - AD.work.at > ms);
+/* Le backoffice ne relit la base que s'il est regardé : jamais onglet caché, ni après 15 minutes sans interaction. */
+let admAct = Date.now();
+const adminIdle = () => Date.now() - admAct > 15 * 60000;
+['pointerdown', 'keydown', 'wheel'].forEach(ev => window.addEventListener(ev, () => { const was = AD.paused; admAct = Date.now(); if (was && AD.tok && AD.st && location.hash === '#admin') adminPoll(false); }, {passive: true, capture: true}));
+document.addEventListener('visibilitychange', () => { if (!document.hidden && AD.tok && AD.st && location.hash === '#admin') adminPoll(false); });
+const STATIC_KEYS = ['student_no', 'nom', 'prenom', 'email', 'groupe', 'langue', 'note', 'code', 'active', 'photo', 'login_started_at', 'first_login_at', 'last_login_at'];
 const aticket = f => aapi('cours_admin_file_ticket', {p_file: f.id});
 async function adownload(f) { try { toast('Téléchargement de ' + f.name + '…'); const t = await aticket(f); saveBlob(await getBlob(t.path), f.name); } catch (e) { toast(e.message, 'err'); } }
 
@@ -1801,20 +1933,29 @@ function adminLogin(msg) {
 }
 async function adminPoll(first) {
   clearTimeout(AD.timer);
+  if (!first && (document.hidden || adminIdle())) { AD.paused = true; paintLive(); return; }
+  AD.paused = false;
   try {
-    const st = await aapi('cours_admin_state', {p_course: AD.sel});
-    AD.st = st; AD.err = ''; AD.n++;
+    const r = await aapi('cours_admin_state2', {p_course: AD.sel, p_known: AD.staticH || null, p_h: AD.h || null});
+    if (r.same) AD.st.now = r.now;
+    else {
+      AD.h = r.h;
+      if (r.lite && AD.statics) r.students.forEach(u => Object.assign(u, AD.statics.get(u.id)));
+      else { AD.statics = new Map(r.students.map(u => [u.id, Object.fromEntries(STATIC_KEYS.map(k => [k, u[k]]))])); AD.staticH = r.static; }
+      AD.st = r;
+    }
+    const st = AD.st; AD.err = ''; AD.n++;
     const c = st.courses.find(x => x.id === st.course_id);
     if (c && (!AD.contents[c.id] || AD.contents[c.id].content_at !== c.updated_at)) AD.contents[c.id] = await aapi('cours_admin_course', {p_course: c.id});
-    if (AD.work && AD.work.course !== st.course_id) AD.work = null;
-    if (AD.tab === 'suivi' && (first || !AD.work || AD.n % 3 === 0)) { await loadWork(); if (AD.work) AD.work.course = st.course_id; }
+    if (AD.tab === 'suivi' && (first || workStale(15000))) await loadWork();
     if (first || !$('.adm')) adminRender(); else adminPaint();
-    if (AD.open && AD.n % 2 === 0) drawerLoad(false);
+    if (AD.open) drawerMaybe();
   } catch (e) {
     if (e.code === 'AUTH') return adminLogin('Session expirée : reconnectez-vous.');
     AD.err = e.message; const n = $('#adm-err'); if (n) { n.hidden = false; n.textContent = e.message; } else if (first) return adminLogin(e.message);
   }
-  AD.timer = setTimeout(() => adminPoll(false), document.hidden ? 12000 : 3000);
+  const c = AD.st && AD.st.courses.find(x => x.id === AD.st.course_id);
+  AD.timer = setTimeout(() => adminPoll(false), c && c.session_active ? 3000 : 6000);
 }
 const aCourse = () => AD.st.courses.find(x => x.id === AD.st.course_id) || null;
 const aContent = id => (AD.contents[id || AD.st.course_id] || {content: {parts: []}, resources: []});
@@ -1839,11 +1980,11 @@ function aPaceState(g, c) {
   return ['Écran de passage affiché', 'warn'];
 }
 
-const ATABS = [['cours', 'Cours'], ['suivi', 'Suivi séance'], ['etudiants', 'Étudiants'], ['contenu', 'Contenu'], ['codes', 'Codes'], ['sauv', 'Sauvegardes'], ['versions', 'Versions']];
+const ATABS = [['cours', 'Cours'], ['suivi', 'Suivi séance'], ['etudiants', 'Étudiants'], ['contenu', 'Contenu'], ['preview', 'Preview'], ['codes', 'Codes'], ['sauv', 'Sauvegardes'], ['versions', 'Versions']];
 function adminRender() {
   const root = $('#app'); root.className = ''; root.textContent = '';
   if (!ATABS.some(t => t[0] === AD.tab)) AD.tab = 'cours';
-  const tabs = el('div', {class: 'tabs'}, ATABS.map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: async () => { AD.tab = k; AD.gsig = ''; if (k === 'suivi') { try { await loadWork(); if (AD.work) AD.work.course = AD.st.course_id; } catch (e) {} } adminRender(); }}, l)));
+  const tabs = el('div', {class: 'tabs'}, ATABS.map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: async () => { AD.tab = k; AD.gsig = ''; if (k === 'suivi' && workStale(0)) { try { await loadWork(); } catch (e) {} } adminRender(); }}, l)));
   root.append(el('div', {class: 'adm'},
     el('header', {class: 'hdr'}, logoEl(), el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, 'Backoffice · ' + (AD.st.admin || '')), el('b', {id: 'adm-title'})),
       el('div', {class: 'hdr-tools', id: 'adm-live'}), el('div', {class: 'hdr-tools'}, el('button', {class: 'btn sm', onclick: () => { api('cours_logout', {p_token: AD.tok}).catch(() => {}); adminLogin(); }}, 'Quitter'))),
@@ -1859,14 +2000,15 @@ function adminPaint(force) {
   const busy = n => n && n.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   paintLive();
   const body = $('#adm-body');
-  if (AD.tab === 'cours') { if (force || !busy($('#adm-ctl'))) paintCtl(); paintGallery(body, force); }
+  if (AD.tab === 'cours') { if (force || !busy($('#adm-ctl'))) paintCtl(); if (!$('.gmenu')) paintGallery(body, force); }
   else if (AD.tab === 'suivi') { if (force || !busy(body)) paintSuivi(body); }
   else if (AD.tab === 'etudiants') { if (force || !busy(body)) paintPromo(body); }
-  else if (force) ({contenu: paintCours, codes: paintCodes, sauv: paintBackups, versions: paintVersions})[AD.tab](body);
+  else if (force) ({contenu: paintCours, preview: paintPreview, codes: paintCodes, sauv: paintBackups, versions: paintVersions})[AD.tab](body);
 }
 /* État en direct, visible depuis tous les onglets : plateforme, séance, demandes d'aide, prise de parole. */
 function paintLive() {
   const st = AD.st, c = aCourse(), box = $('#adm-live'); if (!box) return; box.textContent = '';
+  if (AD.paused) box.append(el('button', {class: 'pill warn helpcount', type: 'button', title: 'La page ne relit plus la base depuis qu\'elle n\'est plus utilisée. Cliquez pour reprendre.', onclick: () => { admAct = Date.now(); adminPoll(false); }}, '⏸ Actualisation en pause'));
   box.append(el('span', {class: 'pill ' + (st.settings.paused ? 'warn' : 'ok')}, st.settings.paused ? 'Plateforme en pause' : 'En ligne'));
   if (!c) return;
   box.append(el('span', {class: 'pill ' + (c.session_active ? 'run' : '')}, c.session_active ? 'Séance en cours' : 'Hors séance'));
@@ -1898,18 +2040,7 @@ function paintCtl() {
     c ? el('span', {class: 'pill ' + (pub ? 'ok' : '')}, pub ? 'Publié' : 'Non publié') : null,
     c && !pub ? ask('Publier ce cours', 'pri', 'Publier « ' + c.title + ' » ?', st.settings.published_course ? 'Il remplace le cours actuellement publié : un seul cours est ouvert à la fois.' : 'Les étudiants pourront se connecter et y travailler.', 'Publier', () => aset('publish', {course: c.id})) : null,
     c && pub ? ask('Dépublier', '', 'Dépublier ce cours ?', 'Les étudiants n\'y auront plus accès. Leurs réponses sont conservées.', 'Dépublier', () => aset('publish', {course: null})) : null)));
-  if (!c) return;
-  // Séance et rythme
-  const ps = aParts();
-  box.append(el('div', {class: 'ctl-b'}, el('p', {class: 'eyebrow'}, 'Séance'), el('div', {class: 'row'}, el('span', {class: 'pill ' + (c.session_active ? 'run' : '')}, c.session_active ? 'Séance en cours' : 'Hors séance'),
-    c.session_active ? ask('Terminer la séance', '', 'Terminer la séance ?', 'Tous les étudiants sont déconnectés et devront se reconnecter pour continuer chez eux. Les parties en lecture seule redeviennent modifiables et l\'écran de passage disparaît. Pensez à créer une sauvegarde (onglet Sauvegardes).', 'Terminer la séance', () => ado('session', {course: c.id, active: false}))
-      : act('Démarrer la séance', 'pri', () => ado('session', {course: c.id, active: true})),
-    c.session_active && c.session_started_at ? el('span', {class: 'small muted'}, 'depuis ' + fmtTime(c.session_started_at)) : null)));
-  const pace = el('div', {class: 'row'});
-  ps.forEach((p, i) => pace.append(el('button', {class: 'btn sm pacebtn' + (i === c.pace_part ? ' pri' : ''), title: p.title, disabled: i === c.pace_part, onclick: () => confirmBox('Faire passer la classe à la partie ' + (i + 1) + ' ?', '« ' + p.title + ' ». ' + (i > c.pace_part ? 'Tous les étudiants en retard voient l\'écran de passage. Ils peuvent demander jusqu\'à 20 minutes de temps additionnel en le justifiant.' : 'Retour en arrière : les parties suivantes redeviennent modifiables.'), 'Passer à la partie ' + (i + 1), async () => { await aset('pace', {course: c.id, part: i}); await adminPoll(false); adminPaint(true); })}, (i + 1) + ' · ' + p.title)));
-  const e = [...(c.pace_log || [])].reverse().find(x => x.part === c.pace_part);
-  box.append(el('div', {class: 'ctl-b grow'}, el('p', {class: 'eyebrow'}, 'Rythme : la classe est à la partie ' + (c.pace_part + 1) + (c.session_active && e ? ' depuis ' + fmtTime(e.at) + (ps[c.pace_part] && ps[c.pace_part].minutes ? ' (' + ps[c.pace_part].minutes + ' min conseillées)' : '') : '')), pace));
-  box.append(iaBlock());
+  if (c) box.append(el('div', {class: 'ctl-b grow'}, el('p', {class: 'eyebrow'}, 'Séance'), el('div', {class: 'row'}, el('span', {class: 'pill ' + (c.session_active ? 'run' : '')}, c.session_active ? 'Séance en cours' : 'Hors séance'), el('button', {class: 'btn sm', onclick: async () => { AD.tab = 'suivi'; if (workStale(0)) { try { await loadWork(); } catch (e) {} } adminRender(); }}, 'Piloter la séance'))));
 }
 function avatar(u, cls) {
   const a = el('span', {class: 'ava' + (cls ? ' ' + cls : '')}, (u.prenom[0] || '') + (u.nom[0] || ''));
@@ -1967,9 +2098,17 @@ async function drawerLoad(force) {
     if (o.course === AD.st.course_id) { const u = AD.st.students.find(x => x.id === o.sid); gid = u && u.group_id; }
     else { const m = (o.list || []).find(x => x.course_id === o.course); gid = m && m.group_id; if (!AD.contents[o.course]) AD.contents[o.course] = await aapi('cours_admin_course', {p_course: o.course}); }
     o.data = gid ? await aapi('cours_admin_group', {p_group: gid}) : null;
-    if (gid && o.course === AD.st.course_id) { try { await loadWork(); if (AD.work) AD.work.course = AD.st.course_id; } catch (e) {} }
+    const gg = gid && AD.st.groups.find(x => x.id === gid); o.act = gg ? gg.last_activity : null; o.at = Date.now();
+    if (gid && o.course === AD.st.course_id && workStale(30000)) { try { await loadWork(); } catch (e) {} }
     if (AD.open === o) drawerPaint();
   } catch (e) { if (b && force) { b.textContent = ''; b.append(el('p', {class: 'note err'}, e.message)); } }
+}
+function drawerMaybe() {
+  const o = AD.open; if (!o) return;
+  const u = AD.st.students.find(x => x.id === o.sid), g = u && AD.st.groups.find(x => x.id === u.group_id), act = g ? g.last_activity : null;
+  if (o.course !== AD.st.course_id) return;
+  const b = $('#drawer-b'), typing = b && b.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if (act !== o.act || ((u && u.group_id) || null) !== ((o.data && o.data.group.id) || null)) drawerLoad(false); else if (!typing) drawerPaint();
 }
 function drawerPaint() {
   const o = AD.open, b = $('#drawer-b'); if (!o || !b) return;
@@ -1993,7 +2132,7 @@ function drawerPaint() {
   const remk = (o.list || []).find(x => x.course_id === o.course), rem = el('textarea', {'aria-label': 'Remarque', placeholder: 'Remarque libre pour ce cours', style: 'min-height:60px'});
   rem.value = cur ? (u.remark || '') : ((remk && remk.remark) || '');
   rem.addEventListener('change', async () => { try { await aset('remark', {course: o.course, student: u.id, body: rem.value}); if (cur) u.remark = rem.value; else if (remk) remk.remark = rem.value; toast('Remarque enregistrée.'); } catch (e) { toast(e.message, 'err'); } });
-  if (cur) b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Présence et aide'), el('div', {class: 'row'}, presenceCtl(u, run), u.help_at ? el('span', {class: 'pill warn'}, '✋ Demande de l\'aide depuis ' + fmtTime(u.help_at)) : el('span', {class: 'small muted'}, 'Aucune demande d\'aide en cours'),
+  if (cur) b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Absence et aide'), el('div', {class: 'row'}, absentBtn(u, run), u.help_at ? el('span', {class: 'pill warn'}, '✋ Demande de l\'aide depuis ' + fmtTime(u.help_at)) : el('span', {class: 'small muted'}, 'Aucune demande d\'aide en cours'),
     u.help_at ? el('button', {class: 'btn sm', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte') : null), u.help_at && u.help_msg ? el('div', {class: 'ans'}, u.help_msg) : null));
   b.append(el('div', {class: 'sub'}, el('p', {class: 'eyebrow'}, 'Remarque pour ce cours'), rem));
   if (!d) { b.append(el('p', {class: 'muted'}, 'Cet étudiant ne s\'est pas encore connecté à ce cours : rien à afficher.')); b.scrollTop = top; return; }
@@ -2106,7 +2245,8 @@ function paintCours(body) {
     let ok = 0, matched = 0;
     for (const f of files) {
       state.textContent = 'Envoi de ' + f.name + '…';
-      try { const t = await aapi('cours_admin_upload_start', {p_kind: kind, p_course: edit, p_part: part || '', p_name: f.name, p_size: f.size, p_mime: f.type || ''}); await putFile(t.path, f); const r = await aapi('cours_admin_upload_done', {p_file: t.id}); ok++; if (r.matched) matched++; }
+      try { const t = await aapi('cours_admin_upload_start', {p_kind: kind, p_course: edit, p_part: part || '', p_name: f.name, p_size: f.size, p_mime: f.type || ''}); await putFile(t.path, f); const r = await aapi('cours_admin_upload_done', {p_file: t.id}); ok++; if (r.matched) matched++;
+        if (kind === 'resource' && /^image\//.test(f.type || '')) { try { await addThumb(edit, {id: t.id, name: f.name, part: part || ''}, f); } catch (x) {} } }
       catch (e) { toast(f.name + ' : ' + e.message, 'err'); }
     }
     state.textContent = ok + ' fichier(s) envoyé(s)' + (kind === 'photo' ? ', ' + matched + ' rattaché(s) à un étudiant' : '') + '.';
@@ -2115,9 +2255,16 @@ function paintCours(body) {
   const rs = el('div', {class: 'stack', style: 'gap:6px'});
   (cc.resources || []).forEach(f => rs.append(el('div', {class: 'file'}, el('button', {class: 'btn quiet', onclick: () => adownload(f)}, f.name), el('span', {class: 'small muted grow'}, fmtSize(f.size) + ' · ' + (f.part ? 'partie ' + f.part : 'toutes les parties')), el('button', {class: 'btn sm', onclick: () => confirmBox('Retirer cette ressource ?', f.name, 'Retirer', async () => { await aset('resource_delete', {file: f.id}); AD.contents[edit] = await aapi('cours_admin_course', {p_course: edit}); paintCours(body); })}, 'Retirer'))));
   if (!(cc.resources || []).length) rs.append(el('p', {class: 'muted small'}, 'Aucune ressource.'));
+  const noThumb = (cc.resources || []).filter(f => /^image\//.test(f.mime || '') && !f.thumb), stT = el('span', {class: 'small muted'});
+  const thumbBtn = noThumb.length ? el('button', {class: 'btn', id: 'make-thumbs', onclick: async e => {
+    e.target.disabled = true; let ok = 0;
+    for (const f of noThumb) { stT.textContent = 'Vignette ' + (ok + 1) + ' / ' + noThumb.length + '…'; try { const tk = await aticket(f); await addThumb(edit, f, await getBlob(tk.path)); ok++; } catch (x) { toast(f.name + ' : ' + x.message, 'err'); } }
+    AD.contents[edit] = await aapi('cours_admin_course', {p_course: edit}); await adminPoll(false); toast(ok + ' vignette(s) créée(s).'); paintCours(body);
+  }}, 'Créer les vignettes manquantes (' + noThumb.length + ')') : null;
   const psel = el('select', {'aria-label': 'Partie'}, el('option', {value: ''}, 'Toutes les parties'), (cc.content.parts || []).map((p, i) => el('option', {value: p.id}, (i + 1) + '. ' + p.title)));
   const st1 = el('span', {class: 'small muted'}), fin = el('input', {type: 'file', multiple: true, hidden: true, onchange: () => { const fs = [...fin.files]; fin.value = ''; up('resource', fs, psel.value, st1); }});
-  body.append(el('div', {class: 'sub'}, el('h2', null, 'Ressources à télécharger par les étudiants'), el('p', {class: 'muted small'}, 'Photos du produit, modèles, documents. Les images s\'affichent directement dans le panneau Ressources.'), rs, el('div', {class: 'row'}, el('div', {style: 'min-width:220px'}, psel), el('button', {class: 'btn', onclick: () => fin.click()}, 'Ajouter des fichiers'), st1, fin)));
+  body.append(el('div', {class: 'sub'}, el('h2', null, 'Ressources à télécharger par les étudiants'), el('p', {class: 'muted small'}, 'Photos du produit, modèles, documents. Les images s\'affichent directement dans le panneau Ressources.'), rs, el('div', {class: 'row'}, el('div', {style: 'min-width:220px'}, psel), el('button', {class: 'btn', onclick: () => fin.click()}, 'Ajouter des fichiers'), st1, fin, thumbBtn, stT),
+    el('p', {class: 'muted small'}, 'Chaque image a une vignette légère : les étudiants ne téléchargent la grande image que lorsqu\'ils l\'ouvrent.')));
   const st2 = el('span', {class: 'small muted'}), pin = el('input', {type: 'file', multiple: true, accept: 'image/*', hidden: true, onchange: () => { const fs = [...pin.files]; pin.value = ''; up('photo', fs, '', st2); }});
   body.append(el('div', {class: 'sub'}, el('h2', null, 'Photos du trombinoscope'), el('p', {class: 'muted small'}, 'Sélectionnez les photos dont le nom contient le numéro étudiant (par exemple F1_CARLIER_22305393.jpg). Elles ne sont visibles que dans le backoffice.'), el('div', {class: 'row'}, el('button', {class: 'btn', onclick: () => pin.click()}, 'Importer des photos'), st2, pin)));
 }
@@ -2143,11 +2290,10 @@ const nowSrv = () => +new Date(AD.st.now);
 const fmtDur = ms => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + pad(m % 60); };
 
 /* ---------- Présence, aide, notes : briques communes ---------- */
-function presenceCtl(u, run) {
-  const set = v => run(() => ado('attendance', {course: AD.st.course_id, student: u.id, present: v}));
-  return el('span', {class: 'seg', role: 'group', 'aria-label': 'Présence de ' + u.prenom + ' ' + u.nom},
-    el('button', {type: 'button', class: u.present === true ? 'on ok' : '', 'aria-pressed': String(u.present === true), title: u.present === true && u.present_auto ? 'Présent (coché à sa connexion)' : 'Marquer présent', onclick: e => { e.stopPropagation(); set(u.present === true ? null : true)(); }}, 'Présent'),
-    el('button', {type: 'button', class: u.present === false ? 'on no' : '', 'aria-pressed': String(u.present === false), title: 'Marquer absent', onclick: e => { e.stopPropagation(); set(u.present === false ? null : false)(); }}, 'Absent'));
+const setAbsent = (u, v) => ado('attendance', {course: AD.st.course_id, student: u.id, present: v ? false : null});
+function absentBtn(u, run) {
+  const abs = u.present === false;
+  return el('button', {class: 'btn sm' + (abs ? ' pri' : ''), type: 'button', 'aria-pressed': String(abs), onclick: run(() => setAbsent(u, !abs))}, abs ? 'Absent · annuler' : 'Marquer absent');
 }
 /* Ligne de note d'un livrable dans le panneau de détail : note retenue, d'où elle vient, correction par l'enseignant. */
 function scoreRow(g, it, get, keys, files, run) {
@@ -2163,19 +2309,16 @@ function scoreRow(g, it, get, keys, files, run) {
 /* Ce qui appelle l'attention de l'enseignant pour un étudiant. */
 function aNeeds(u, g, c) {
   const r = [], s = aStatus(u, g)[0];
+  if (u.present === false) return r;
   if (u.help_at) r.push('Demande de l\'aide');
-  if (u.present === false) r.push('Absent');
-  if (s === 'Jamais connecté') r.push('Jamais connecté');
-  else if (s === 'Login en cours') r.push('Connexion en cours');
-  else if (!u.online) r.push('Non connecté');
+  if (!c || !c.session_active) return r;
+  if (s === 'Jamais connecté' || s === 'Login en cours') r.push(s === 'Login en cours' ? 'Connexion en cours' : 'Pas encore connecté');
+  else if (!u.online) r.push('Déconnecté');
   if (s === 'Connecté' && u.online) r.push('Pas commencé');
-  if (c && c.session_active) {
-    if (u.present == null) r.push('Présence non pointée');
-    if (g) {
-      const ps = aPaceState(g, c); if (ps && ps[1] === 'warn') r.push(ps[0].startsWith('Temps') ? 'Temps additionnel' : 'En retard sur le rythme');
-      const ref = Math.max(u.last_write ? +new Date(u.last_write) : 0, u.joined_at ? +new Date(u.joined_at) : 0, c.session_started_at ? +new Date(c.session_started_at) : 0);
-      if (ref && !g.finished_at && nowSrv() - ref > 30 * 60000) r.push('Rien écrit depuis 30 min');
-    }
+  if (g) {
+    const ps = aPaceState(g, c); if (ps && ps[1] === 'warn') r.push(ps[0].startsWith('Temps') ? 'Temps additionnel' : 'En retard sur le rythme');
+    const ref = Math.max(u.last_write ? +new Date(u.last_write) : 0, u.joined_at ? +new Date(u.joined_at) : 0, c.session_started_at ? +new Date(c.session_started_at) : 0);
+    if (ref && !g.finished_at && nowSrv() - ref > 30 * 60000) r.push('Rien écrit depuis 30 min');
   }
   return r;
 }
@@ -2187,57 +2330,69 @@ function commentModal(u) {
   });
 }
 
-/* ---------- Notation par IA : réglages (onglet Cours) ---------- */
+/* ---------- Notation par IA : réglages (onglet Suivi séance) ---------- */
 function iaBlock() {
   const ia = AD.st.settings.ia || {enabled: false, has_key: false, model: ''};
   const act = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
   const model = el('input', {type: 'text', value: ia.model || '', 'aria-label': 'Modèle Claude', style: 'width:170px', spellcheck: 'false', onchange: act(() => ado('ia', {model: model.value}))});
   const key = el('input', {type: 'password', autocomplete: 'off', placeholder: ia.has_key ? 'Clé enregistrée · saisir pour la remplacer' : 'Clé d\'API Anthropic (sk-ant-…)', 'aria-label': 'Clé d\'API Anthropic', style: 'width:270px'});
-  return el('div', {class: 'ctl-b'}, el('p', {class: 'eyebrow'}, 'Notation par IA'), el('div', {class: 'row'},
+  return el('div', {class: 'iabox'}, el('p', {class: 'eyebrow'}, 'Notation par IA'), el('div', {class: 'row'},
     el('span', {class: 'pill ' + (ia.enabled && ia.has_key ? 'ok' : ia.enabled ? 'warn' : '')}, ia.enabled ? (ia.has_key ? 'Activée' : 'Activée · clé manquante') : 'Désactivée'),
     el('button', {class: 'btn sm' + (ia.enabled ? '' : ' pri'), onclick: act(() => ado('ia', {enabled: !ia.enabled}))}, ia.enabled ? 'Désactiver' : 'Activer'),
     ia.enabled ? model : null, ia.enabled ? key : null,
     ia.enabled ? el('button', {class: 'btn sm', onclick: act(async () => { if (!key.value.trim()) throw new Error('Saisissez la clé d\'API.'); await ado('ia', {key: key.value.trim()}); toast('Clé enregistrée. Elle n\'est plus jamais affichée.'); })}, 'Enregistrer la clé') : null,
     ia.enabled && ia.has_key ? el('button', {class: 'btn sm', onclick: () => confirmBox('Retirer la clé d\'API ?', 'La notation par IA ne sera plus possible tant qu\'une clé n\'est pas enregistrée.', 'Retirer', async () => { await ado('ia', {key: ''}); await adminPoll(false); adminPaint(true); })}, 'Retirer la clé') : null),
-    el('p', {class: 'small muted', style: 'max-width:760px'}, ia.enabled ? 'À la demande, depuis « Suivi séance » : Claude note chaque livrable de 1 à 5. Les réponses sont envoyées à Anthropic sans nom d\'étudiant. Sans passage de l\'IA, la note est calculée automatiquement.' : 'Sans IA, la note de qualité est calculée automatiquement (volume et complétude des réponses).'));
+    el('p', {class: 'small muted', style: 'max-width:760px'}, ia.enabled ? 'À la demande : Claude note chaque livrable de 1 à 5. Les réponses sont envoyées à Anthropic sans nom d\'étudiant. Sans passage de l\'IA, la note est calculée automatiquement.' : 'Sans IA, la note de qualité est calculée automatiquement (volume et complétude des réponses).'));
 }
 
 /* ---------- Onglet Cours : galerie des étudiants ---------- */
+/* Menu « … » d'une tuile : commenter, marquer absent, baisser une alerte. */
+function tileMenu(u, anchor, run) {
+  document.querySelectorAll('.gmenu').forEach(x => x.remove());
+  const abs = u.present === false, close = () => { m.remove(); document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', esc, true); AD.gsig = ''; };
+  const item = (label, fn) => el('button', {type: 'button', role: 'menuitem', onclick: () => { close(); fn(); }}, label);
+  const m = el('div', {class: 'gmenu', role: 'menu', 'aria-label': 'Actions pour ' + u.prenom + ' ' + u.nom},
+    item(u.remark ? 'Modifier le commentaire' : 'Commenter', () => commentModal(u)),
+    item(abs ? 'Annuler l\'absence' : 'Marquer absent', run(() => setAbsent(u, !abs))),
+    u.help_at ? item('Baisser l\'alerte', run(() => ado('help_clear', {course: AD.st.course_id, student: u.id}))) : null,
+    item('Voir le détail', () => openDrawer(u.id)));
+  const out = e => { if (!m.contains(e.target) && e.target !== anchor) close(); }, esc = e => { if (e.key === 'Escape') { close(); anchor.focus(); } };
+  anchor.closest('.gcard').append(m); document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', esc, true);
+  const f = m.querySelector('button'); if (f) f.focus();
+}
 function paintGallery(body, force) {
   const st = AD.st, c = aCourse(), G = new Map(st.groups.map(g => [g.id, g])), act = st.students.filter(u => u.active);
   const info = new Map(act.map(u => { const g = G.get(u.group_id); return [u.id, {g, status: aStatus(u, g), needs: aNeeds(u, g, c)}]; }));
-  const sig = JSON.stringify([AD.needOnly, AD.open && AD.open.sid, act.map(u => [u.id, u.group_id, u.online, u.present, u.present_auto, u.help_at, u.remark || '', u.photo, info.get(u.id).status[0], info.get(u.id).needs.join('|')])]);
+  const sig = JSON.stringify([AD.needOnly, AD.open && AD.open.sid, act.map(u => [u.id, u.group_id, u.online, u.present, u.help_at, u.remark || '', u.photo, info.get(u.id).status[0], info.get(u.id).needs.join('|')])]);
   if (!force && sig === AD.gsig && $('#gal')) return;
   AD.gsig = sig;
   const old = new Map(), oldUnits = new Set(); document.querySelectorAll('#gal [data-sid]').forEach(n => old.set(n.dataset.sid, n.getBoundingClientRect())); document.querySelectorAll('#gal [data-unit]').forEach(n => oldUnits.add(n.dataset.unit));
   const first = !$('#gal'), keepScroll = window.scrollY; body.textContent = '';
-  const need = act.filter(u => info.get(u.id).needs.length), nPres = act.filter(u => u.present === true).length, nAbs = act.filter(u => u.present === false).length;
-  body.append(el('div', {class: 'kpis'}, [[act.filter(u => u.online).length + ' / ' + act.length, 'connectés maintenant'], [nPres + ' / ' + act.length, 'présents' + (nAbs ? ' · ' + nAbs + ' absent(s)' : '')], [act.filter(u => u.help_at).length, 'demandes d\'aide'], [need.length, 'à assister'], [st.groups.filter(g => act.filter(u => u.group_id === g.id).length > 1).length, 'TP à plusieurs']].map(([v, l]) => el('div', {class: 'kpi'}, el('b', null, String(v)), el('span', {class: 'small muted'}, l)))));
+  const need = act.filter(u => info.get(u.id).needs.length);
   body.append(el('div', {class: 'row'}, el('label', {class: 'switch'}, el('input', {type: 'checkbox', checked: AD.needOnly, onchange: e => { AD.needOnly = e.target.checked; paintGallery(body, true); }}), el('span', null, 'N\'afficher que les étudiants à assister (' + need.length + ')')),
-    el('span', {class: 'small muted'}, 'Pastille verte : connecté. Cliquez sur une photo pour le détail ; survolez une carte pour commenter.')));
+    el('span', {class: 'small muted'}, 'Pastille verte : connecté. Cliquez sur une photo pour le détail ; le bouton « … » d\'une tuile sert à commenter ou à marquer un absent.' + (c && c.session_active ? '' : ' Hors séance, seules les demandes d\'aide sont à assister.'))));
   const run = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
   const card = u => {
-    const i = info.get(u.id), [sl, sc] = i.status, help = !!u.help_at;
-    return el('div', {class: 'gcard' + (help ? ' help' : '') + (u.present === false ? ' absent' : '') + (AD.open && AD.open.sid === u.id ? ' sel' : ''), 'data-sid': u.id},
-      el('div', {class: 'gphoto-w'}, el('button', {class: 'gphoto', type: 'button', title: 'Voir le détail de ' + u.prenom + ' ' + u.nom, onclick: () => openDrawer(u.id)}, avatar(u, 'big'),
-        el('span', {class: 'gdot' + (u.online ? ' on' : ''), title: u.online ? 'Connecté à la plateforme' : (u.last_seen ? 'Non connecté · vu à ' + fmtClock(u.last_seen) : 'Jamais connecté')}),
+    const i = info.get(u.id), [sl, sc] = i.status, help = !!u.help_at, abs = u.present === false;
+    const more = el('button', {class: 'gmore', type: 'button', title: 'Commenter, marquer absent…', 'aria-label': 'Actions pour ' + u.prenom + ' ' + u.nom, 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); tileMenu(u, more, run); }}, '…');
+    return el('div', {class: 'gcard' + (help ? ' help' : '') + (abs ? ' absent' : '') + (AD.open && AD.open.sid === u.id ? ' sel' : ''), 'data-sid': u.id}, more,
+      el('button', {class: 'gphoto', type: 'button', title: 'Voir le détail de ' + u.prenom + ' ' + u.nom, onclick: () => openDrawer(u.id)}, avatar(u, 'big'),
+        el('span', {class: 'gdot' + (u.online ? ' on' : ''), title: u.online ? 'Connecté à la plateforme' : (u.last_seen ? 'Non connecté · vu à ' + fmtClock(u.last_seen) : 'Non connecté')}),
         help ? el('span', {class: 'ghelp', title: u.help_msg || 'Demande de l\'aide'}, '✋') : null, u.remark ? el('span', {class: 'gnote', title: u.remark}, '💬') : null),
-        el('button', {class: 'btn sm gcomment', type: 'button', onclick: () => commentModal(u)}, u.remark ? 'Modifier le commentaire' : 'Commenter')),
       el('div', {class: 'gname'}, el('b', null, u.prenom), ' ' + u.nom),
-      el('div', null, el('span', {class: 'pill ' + sc}, sl)),
+      el('div', null, abs ? el('span', {class: 'pill warn'}, 'Absent') : el('span', {class: 'pill ' + sc}, sl)),
       i.needs.length ? el('div', {class: 'gneeds'}, i.needs.filter(n => n !== sl).map(n => el('span', {class: 'need' + (/aide/.test(n) ? ' hot' : '')}, n))) : null,
       help && u.help_msg ? el('div', {class: 'ghelpmsg'}, '« ' + u.help_msg + ' »') : null,
-      el('div', {class: 'gact'}, presenceCtl(u, run),
-        help ? el('button', {class: 'btn sm', type: 'button', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte') : null));
+      help ? el('button', {class: 'btn sm', type: 'button', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte') : null);
   };
-  // Unités : un cadre par TP à plusieurs, une carte par étudiant seul ; ordre alphabétique du premier membre.
+  // Unités : un cadre par TP à plusieurs, une tuile par étudiant seul ; ordre alphabétique du premier membre.
   const units = [], seen = new Set();
   [...act].sort((a, b) => (a.nom + a.prenom).localeCompare(b.nom + b.prenom)).forEach(u => {
     if (seen.has(u.id)) return;
     const mates = u.group_id ? act.filter(x => x.group_id === u.group_id).sort((a, b) => (a.role === 'principal' ? -1 : 0) - (b.role === 'principal' ? -1 : 0) || a.nom.localeCompare(b.nom)) : [u];
     mates.forEach(m => seen.add(m.id)); units.push(mates);
   });
-  const gal = el('div', {id: 'gal', class: 'gal'});
+  const gal = el('div', {id: 'gal', class: 'sgal'});
   units.forEach(ms => {
     const show = AD.needOnly ? ms.filter(m => info.get(m.id).needs.length) : ms; if (!show.length) return;
     if (ms.length > 1) gal.append(el('div', {class: 'gcluster', 'data-unit': ms[0].group_id}, el('div', {class: 'gcluster-t'}, 'TP à ' + ms.length + ' · projet de ' + (ms.find(m => m.role === 'principal') || ms[0]).prenom), el('div', {class: 'gcluster-b'}, show.map(card))));
@@ -2245,7 +2400,7 @@ function paintGallery(body, force) {
   });
   if (!gal.children.length) gal.append(el('p', {class: 'muted'}, AD.needOnly ? 'Personne à assister pour le moment.' : 'Aucun étudiant.'));
   body.append(gal); window.scrollTo(0, keepScroll);
-  // Animation : les cartes glissent vers leur nouvelle place (deux étudiants qui s'associent viennent côte à côte).
+  // Animation : les tuiles glissent vers leur nouvelle place (deux étudiants qui s'associent viennent côte à côte).
   if (!first && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gal.querySelectorAll('[data-sid]').forEach(n => { const o = old.get(n.dataset.sid); if (!o) return; const r = n.getBoundingClientRect(), dx = o.left - r.left, dy = o.top - r.top; if (Math.abs(dx) + Math.abs(dy) > 2) n.animate([{transform: 'translate(' + dx + 'px,' + dy + 'px)'}, {transform: 'none'}], {duration: 600, easing: 'cubic-bezier(.2,.8,.2,1)'}); });
     gal.querySelectorAll('[data-unit]').forEach(n => { if (!oldUnits.has(n.dataset.unit)) n.classList.add('fresh'); });
@@ -2261,25 +2416,40 @@ function statementOf(part, it) {
 function paintSuivi(body) {
   const st = AD.st, c = aCourse(), W = AD.work; body.textContent = '';
   if (!c) return body.append(el('p', {class: 'muted'}, 'Aucun cours.'));
-  if (!W) { body.append(el('p', {class: 'muted'}, 'Chargement du travail des étudiants…')); loadWork().then(() => { if (AD.work) AD.work.course = st.course_id; if (AD.tab === 'suivi') paintSuivi(body); }).catch(e => toast(e.message, 'err')); return; }
-  const content = aContent().content, ps = content.parts || [], livs = livrablesOf(content), U = new Map(st.students.map(u => [u.id, u])), G = new Map(st.groups.map(g => [g.id, g]));
-  const groups = W.groups.map(g => ({...g, us: g.members.map(id => U.get(id)).filter(u => u && u.active), stats: groupStats(g, livs)})).filter(g => g.us.length);
+  if (!W || W.course !== st.course_id) { body.append(el('p', {class: 'muted'}, 'Chargement du travail des étudiants…')); loadWork().then(() => { if (AD.tab === 'suivi') paintSuivi(body); }).catch(e => toast(e.message, 'err')); return; }
+  const content = aContent().content, ps = content.parts || [], livs = livrablesOf(content), U = new Map(st.students.map(u => [u.id, u]));
+  // Les absents ne figurent pas dans le suivi.
+  const groups = W.groups.map(g => ({...g, us: g.members.map(id => U.get(id)).filter(u => u && u.active && u.present !== false), stats: groupStats(g, livs)})).filter(g => g.us.length);
   const gname = g => g.us.map(u => u.prenom + ' ' + u.nom).join(', ');
-  const faces = (g, cls) => el('span', {class: 'faces'}, g.us.map(u => el('button', {class: 'face' + (u.help_at ? ' help' : ''), type: 'button', title: u.prenom + ' ' + u.nom + (u.help_at ? ' · demande de l\'aide' : ''), onclick: e => { e.stopPropagation(); openDrawer(u.id); }}, avatar(u, cls))));
-  // 1. Déroulé du TP par rapport au temps prévu
+  const faces = (g, cls) => el('span', {class: 'faces'}, g.us.map(u => el('button', {class: 'face' + (u.help_at ? ' help' : ''), type: 'button', title: u.prenom + ' ' + u.nom + (u.help_at ? ' · demande de l\'aide' : ''), onclick: e => { e.stopPropagation(); openDrawer(u.id); }}, avatar(u, cls), u.help_at ? el('span', {class: 'fhelp'}, '✋') : null)));
+  const run = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
+  // 1. Pilotage de la séance et déroulé du TP par rapport au temps prévu
   const mins = ps.map(p => p.minutes || 30), total = mins.reduce((s, x) => s + x, 0) || 1, cum = [0]; mins.forEach(m => cum.push(cum[cum.length - 1] + m));
-  const el1 = el('div', {class: 'sub'}, el('h2', null, 'Déroulé du TP'));
+  const el1 = el('div', {class: 'sub first'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Séance'),
+    el('span', {class: 'pill ' + (c.session_active ? 'run' : '')}, c.session_active ? 'Séance en cours depuis ' + fmtTime(c.session_started_at) : 'Hors séance'),
+    c.session_active
+      ? el('button', {class: 'btn sm', onclick: () => confirmBox('Terminer la séance ?', 'Tous les étudiants sont déconnectés et devront se reconnecter pour continuer chez eux. Les parties en lecture seule redeviennent modifiables et l\'écran de passage disparaît. Pensez à créer une sauvegarde (onglet Sauvegardes).', 'Terminer la séance', async () => { await ado('session', {course: c.id, active: false}); await adminPoll(false); adminPaint(true); })}, 'Terminer la séance')
+      : el('button', {class: 'btn sm pri', onclick: run(() => ado('session', {course: c.id, active: true}))}, 'Démarrer la séance')));
   const elapsed = c.session_active && c.session_started_at ? (nowSrv() - new Date(c.session_started_at)) / 60000 : null;
-  let verdict = el('span', {class: 'pill'}, 'Hors séance · temps prévu : ' + fmtDur(total * 60000));
+  let verdict = el('span', {class: 'pill'}, 'Temps prévu : ' + fmtDur(total * 60000));
   if (elapsed != null) {
     const pp = c.pace_part, endP = cum[pp + 1], startP = cum[pp];
     if (elapsed > endP) verdict = el('span', {class: 'pill warn'}, 'Retard : la partie ' + (pp + 1) + ' dépasse de ' + fmtDur((elapsed - endP) * 60000) + ' le temps prévu');
     else if (elapsed < startP) verdict = el('span', {class: 'pill ok'}, 'Avance : ' + fmtDur((startP - elapsed) * 60000) + ' sur le déroulé prévu');
     else verdict = el('span', {class: 'pill ok'}, 'Dans les temps : partie ' + (pp + 1) + ', ' + Math.round(elapsed - startP) + ' min sur ' + mins[pp] + ' prévues');
   }
-  el1.append(el('div', {class: 'row'}, verdict, elapsed != null ? el('span', {class: 'small muted'}, 'Séance démarrée à ' + fmtTime(c.session_started_at) + ' · ' + fmtDur(elapsed * 60000) + ' écoulées sur ' + fmtDur(total * 60000) + ' prévues') : null));
+  el1.append(el('div', {class: 'row'}, verdict, elapsed != null ? el('span', {class: 'small muted'}, fmtDur(elapsed * 60000) + ' écoulées sur ' + fmtDur(total * 60000) + ' prévues · cliquez sur une partie pour y faire passer la classe') : el('span', {class: 'small muted'}, 'Démarrez la séance pour imposer le rythme : la classe est à la partie ' + (c.pace_part + 1) + '.')));
+  // Complétion par partie : part des livrables de la partie rendus, tous groupes confondus
+  const partDone = i => { const ls = livs.filter(l => l.pi === i); if (!ls.length || !groups.length) return null; let d = 0; groups.forEach(g => ls.forEach(l => { if (g.stats.per[l.it.id].done) d++; })); return Math.round(100 * d / (ls.length * groups.length)); };
   const track = el('div', {class: 'track'});
-  ps.forEach((p, i) => track.append(el('div', {class: 'seg-p' + (c.session_active && i < c.pace_part ? ' done' : '') + (c.session_active && i === c.pace_part ? ' cur' : ''), style: 'flex:' + mins[i] + ' 1 0'}, el('b', null, (i + 1) + ' · ' + p.title), el('span', {class: 'small'}, mins[i] + ' min' + (c.session_active && i === c.pace_part ? ' · la classe est ici' : '')))));
+  ps.forEach((p, i) => {
+    const cur = c.session_active && i === c.pace_part, pd = partDone(i);
+    const inner = [el('b', null, (i + 1) + ' · ' + p.title), el('span', {class: 'small'}, mins[i] + ' min' + (cur ? ' · la classe est ici' : '')),
+      pd == null ? null : el('span', {class: 'pbar', title: 'Complétion de la partie : ' + pd + ' % des livrables rendus'}, el('i', {style: 'width:' + pd + '%'})), pd == null ? null : el('span', {class: 'small'}, 'Complétion : ' + pd + ' %')];
+    const cls = 'seg-p' + (c.session_active && i < c.pace_part ? ' done' : '') + (cur ? ' cur' : ''), style = 'flex:' + mins[i] + ' 1 0';
+    if (c.session_active && !cur) track.append(el('button', {class: cls + ' go', type: 'button', style, title: 'Faire passer la classe à la partie ' + (i + 1), onclick: () => confirmBox('Faire passer la classe à la partie ' + (i + 1) + ' ?', '« ' + p.title + ' ». ' + (i > c.pace_part ? 'Tous les étudiants en retard voient l\'écran de passage. Ils peuvent demander jusqu\'à 20 minutes de temps additionnel en le justifiant.' : 'Retour en arrière : les parties suivantes redeviennent modifiables.'), 'Passer à la partie ' + (i + 1), async () => { await aset('pace', {course: c.id, part: i}); await adminPoll(false); adminPaint(true); })}, inner));
+    else track.append(el('div', {class: cls, style}, inner));
+  });
   if (elapsed != null) track.append(el('div', {class: 'now', style: 'left:' + Math.min(100, 100 * elapsed / total) + '%', title: 'Temps écoulé'}, el('span', null, 'Temps écoulé')));
   el1.append(track);
   // Où sont les groupes : position du membre le plus avancé
@@ -2290,32 +2460,17 @@ function paintSuivi(body) {
   const nowhere = groups.filter(g => pos(g) < 0);
   if (nowhere.length) el1.append(el('div', {class: 'row small muted'}, 'Pas encore entrés dans une partie : ', nowhere.map(g => faces(g, 'mini'))));
   body.append(el1);
-  // 2. Par livrable : complétion et qualité
-  const ia = st.settings.ia || {}, lastIa = Math.max(0, ...W.groups.flatMap(g => Object.values(g.scores || {}).map(s => s.ia_at ? +new Date(s.ia_at) : 0)));
-  const el2 = el('div', {class: 'sub'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Livrables'),
-    ia.enabled && ia.has_key ? el('button', {class: 'btn sm pri', disabled: AD.iaBusy, onclick: () => runIA(body)}, AD.iaBusy ? 'Notation en cours…' : 'Noter avec l\'IA') : null,
-    el('span', {class: 'small muted'}, ia.enabled && ia.has_key ? (lastIa ? 'Dernière notation par IA : ' + fmtClock(lastIa) : 'Pas encore de notation par IA') : 'Notes calculées automatiquement (volume et complétude). L\'IA s\'active dans l\'onglet Cours.')));
-  const tb = el('tbody');
-  const excerpt = (g, it) => { const t = livText(it, k => g.answers[k], Object.keys(g.answers), g.files).replace(/\s+/g, ' '); return t.length > 150 ? t.slice(0, 150) + '…' : t; };
-  const sample = (g, it, s) => g ? el('button', {class: 'sample', type: 'button', title: 'Voir le détail de ce groupe', onclick: () => openDrawer(g.us[0].id)}, el('span', {class: 'pill qual q' + s.score}, '★ ' + s.score), ' ', el('b', null, gname(g)), el('span', {class: 'small muted'}, excerpt(g, it))) : el('span', {class: 'muted'}, '—');
-  livs.forEach(({it, part, pi}) => {
-    const done = groups.filter(g => g.stats.per[it.id].done), scored = done.filter(g => g.stats.per[it.id].score != null).sort((a, b) => b.stats.per[it.id].score - a.stats.per[it.id].score || b.stats.completion - a.stats.completion);
-    const pct = groups.length ? Math.round(100 * done.length / groups.length) : 0, avg = scored.length ? scored.reduce((s, g) => s + g.stats.per[it.id].score, 0) / scored.length : null;
-    const srcs = new Set(scored.map(g => g.stats.per[it.id].src)), best = scored[0], worst = scored.length > 1 ? scored[scored.length - 1] : null;
-    tb.append(el('tr', null,
-      el('td', null, el('div', {class: 'small muted'}, part ? 'Partie ' + (pi + 1) : 'Tout le cours'), el('b', null, plain(it.label))),
-      el('td', {style: 'min-width:150px'}, el('div', {class: 'bar', title: pct + ' %'}, el('i', {style: 'width:' + pct + '%'})), el('span', {class: 'small muted'}, done.length + ' / ' + groups.length + (groups.length > 1 ? ' groupes' : ' groupe') + ' · ' + pct + ' %')),
-      el('td', {style: 'white-space:nowrap'}, avg == null ? el('span', {class: 'muted'}, it.t === 'upload' && done.length ? 'fichier · non noté' : '—') : el('span', {class: 'pill qual q' + Math.round(avg)}, '★ ' + fmtNote(avg) + ' / 5'), avg != null ? el('div', {class: 'small muted'}, [...srcs].map(x => ({ens: 'enseignant', ia: 'IA', auto: 'auto'}[x])).join(' + ')) : null),
-      el('td', null, sample(best, it, best && best.stats.per[it.id])), el('td', null, sample(worst, it, worst && worst.stats.per[it.id]))));
-  });
-  el2.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data livs'}, el('thead', null, el('tr', null, ['Livrable', 'Complétion', 'Qualité moyenne', 'Meilleur résultat', 'Résultat le moins bon'].map(h => el('th', null, h)))), tb)));
-  body.append(el2);
-  // 3. Classement des groupes : qualité des réponses et complétion
+  // 2. Demandes d'aide en cours
+  const helps = st.students.filter(u => u.active && u.help_at && u.present !== false).sort((a, b) => new Date(a.help_at) - new Date(b.help_at));
+  if (helps.length) body.append(el('div', {class: 'sub helpbox', role: 'status'}, el('h2', null, '✋ ' + helps.length + (helps.length > 1 ? ' demandes d\'aide' : ' demande d\'aide')),
+    el('div', {class: 'helplist'}, helps.map(u => el('div', {class: 'helpitem'}, el('button', {class: 'face help', type: 'button', title: 'Voir le détail', onclick: () => openDrawer(u.id)}, avatar(u, 'mid')),
+      el('div', {class: 'grow'}, el('b', null, u.prenom + ' ' + u.nom), el('div', {class: 'small'}, 'depuis ' + fmtTime(u.help_at) + (u.help_msg ? ' · « ' + u.help_msg + ' »' : ''))),
+      el('button', {class: 'btn sm', type: 'button', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte'))))));
+  // 3. Groupes classés : qualité des réponses et complétion
   const ranked = [...groups].sort((a, b) => b.stats.rank - a.stats.rank || b.stats.completion - a.stats.completion || gname(a).localeCompare(gname(b)));
   const n = ranked.length, nTop = n >= 3 ? Math.ceil(n / 3) : n, nLow = n >= 3 ? Math.floor(n / 3) : 0;
   const buckets = [['Meilleures réponses', ranked.slice(0, nTop)], ['Médian', ranked.slice(nTop, n - nLow)], ['Moins bonnes réponses', ranked.slice(n - nLow)]];
-  const el3 = el('div', {class: 'sub'}, el('h2', null, 'Groupes'), el('p', {class: 'small muted'}, 'Classés selon la qualité des réponses rendues et le niveau de complétion. Sur chaque groupe : note moyenne et part des livrables rendus.'));
-  const run = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
+  const el3 = el('div', {class: 'sub'}, el('h2', null, 'Groupes'), el('p', {class: 'small muted'}, 'Classés selon la qualité des réponses rendues et le niveau de complétion. Sur chaque groupe : note moyenne et part des livrables rendus. Les absents ne sont pas affichés.'));
   buckets.forEach(([title, list]) => {
     if (!list.length) return;
     el3.append(el('h3', {class: 'bucket-t'}, title + ' (' + list.length + ')'), el('div', {class: 'bucket'}, list.map(g => {
@@ -2329,6 +2484,26 @@ function paintSuivi(body) {
   });
   if (!n) el3.append(el('p', {class: 'muted'}, 'Aucun groupe n\'a encore commencé.'));
   body.append(el3);
+  // 4. Par livrable : complétion et qualité
+  const ia = st.settings.ia || {}, lastIa = Math.max(0, ...W.groups.flatMap(g => Object.values(g.scores || {}).map(s => s.ia_at ? +new Date(s.ia_at) : 0)));
+  const el2 = el('div', {class: 'sub'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Livrables'),
+    ia.enabled && ia.has_key ? el('button', {class: 'btn sm pri', disabled: AD.iaBusy, onclick: () => runIA(body)}, AD.iaBusy ? 'Notation en cours…' : 'Noter avec l\'IA') : null,
+    el('span', {class: 'small muted'}, ia.enabled && ia.has_key ? (lastIa ? 'Dernière notation par IA : ' + fmtClock(lastIa) : 'Pas encore de notation par IA') : 'Notes calculées automatiquement (volume et complétude).')));
+  const tb = el('tbody');
+  const excerpt = (g, it) => { const t = livText(it, k => g.answers[k], Object.keys(g.answers), g.files).replace(/\s+/g, ' '); return t.length > 150 ? t.slice(0, 150) + '…' : t; };
+  const sample = (g, it, s) => g ? el('button', {class: 'sample', type: 'button', title: 'Voir le détail de ce groupe', onclick: () => openDrawer(g.us[0].id)}, el('span', {class: 'pill qual q' + s.score}, '★ ' + s.score), ' ', el('b', null, gname(g)), el('span', {class: 'small muted'}, excerpt(g, it))) : el('span', {class: 'muted'}, '—');
+  livs.forEach(({it, part, pi}) => {
+    const done = groups.filter(g => g.stats.per[it.id].done), scored = done.filter(g => g.stats.per[it.id].score != null).sort((a, b) => b.stats.per[it.id].score - a.stats.per[it.id].score || b.stats.completion - a.stats.completion);
+    const pct = groups.length ? Math.round(100 * done.length / groups.length) : 0, avg = scored.length ? scored.reduce((s, g) => s + g.stats.per[it.id].score, 0) / scored.length : null;
+    const srcs = new Set(scored.map(g => g.stats.per[it.id].src)), best = scored[0], worst = scored.length > 1 ? scored[scored.length - 1] : null;
+    tb.append(el('tr', null,
+      el('td', null, el('div', {class: 'small muted'}, part ? 'Partie ' + (pi + 1) : 'Tout le cours'), el('b', null, plain(it.label))),
+      el('td', {style: 'min-width:150px'}, el('div', {class: 'bar', title: pct + ' %'}, el('i', {style: 'width:' + pct + '%'})), el('span', {class: 'small muted'}, done.length + ' / ' + groups.length + (groups.length > 1 ? ' groupes' : ' groupe') + ' · ' + pct + ' %')),
+      el('td', {style: 'white-space:nowrap'}, avg == null ? el('span', {class: 'muted'}, it.t === 'upload' && done.length ? 'fichier · non noté' : '—') : el('span', {class: 'pill qual q' + Math.round(avg)}, '★ ' + fmtNote(avg) + ' / 5'), avg != null ? el('div', {class: 'small muted'}, [...srcs].map(x => ({ens: 'enseignant', ia: 'IA', auto: 'auto'}[x])).join(' + ')) : null),
+      el('td', null, sample(best, it, best && best.stats.per[it.id])), el('td', null, sample(worst, it, worst && worst.stats.per[it.id]))));
+  });
+  el2.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data livs'}, el('thead', null, el('tr', null, ['Livrable', 'Complétion', 'Qualité moyenne', 'Meilleur résultat', 'Résultat le moins bon'].map(h => el('th', null, h)))), tb)), iaBlock());
+  body.append(el2);
 }
 /* Notation par IA, à la demande : un appel par livrable, tous les groupes qui l'ont rendu. */
 async function runIA(body) {
@@ -2346,7 +2521,7 @@ async function runIA(body) {
         const res = await fetch(SUPA + '/functions/v1/cours-ia', {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify({token: AD.tok, jobs})});
         const r = await res.json().catch(() => null);
         if (!res.ok) { const m = String((r && r.message) || 'La notation par IA a échoué (' + res.status + ').'), i = m.indexOf('|'); throw new Error(i > 0 && i < 12 ? m.slice(i + 1) : m); }
-        await loadWork(); if (AD.work) AD.work.course = st.course_id;
+        await loadWork();
         toast(r.stored + ' note(s) enregistrée(s)' + (r.errors && r.errors.length ? ' · ' + r.errors.length + ' livrable(s) en échec : ' + r.errors[0].message : '.'), r.errors && r.errors.length ? 'err' : '');
       } catch (e) { toast(e.message, 'err'); }
       AD.iaBusy = false; if (AD.tab === 'suivi') paintSuivi($('#adm-body'));
@@ -2463,10 +2638,50 @@ function paintVersions(body) {
   CHANGELOG.forEach((v, i) => body.append(el('div', {class: 'sub ver' + (i === 0 ? ' cur' : '')}, el('div', {class: 'row'}, el('span', {class: 'pill' + (i === 0 ? ' run' : '')}, 'v' + v.v), el('b', null, v.title), el('span', {class: 'small muted'}, v.date)), el('ul', null, v.items.map(t => el('li', null, t))))));
 }
 
-/* ---------- Aiguillage : espace étudiant ou backoffice ---------- */
-window.addEventListener('hashchange', () => location.reload());
+/* ---------- Onglet Preview : tous les écrans du cours, tels que les voient les étudiants ---------- */
+function paintPreview(body) {
+  const st = AD.st, c = aCourse(); body.textContent = '';
+  if (!c) return body.append(el('p', {class: 'muted'}, 'Aucun cours.'));
+  const content = aContent().content, W = content.welcome || [], ps = content.parts || [];
+  const url = q => location.pathname + location.search + '#preview?c=' + encodeURIComponent(c.id) + '&' + q;
+  const frame = el('iframe', {class: 'pvframe', title: 'Aperçu de l\'écran, vue étudiant', src: url(W.length ? 'w=0' : 'p=0&s=0')});
+  const list = el('nav', {class: 'pvlist', 'aria-label': 'Écrans du cours'}), items = [];
+  const add = (label, q, key) => { const b = el('button', {type: 'button', 'data-k': key, onclick: () => { try { frame.contentWindow.location.hash = '#preview?c=' + encodeURIComponent(c.id) + '&' + q; } catch (e) { frame.src = url(q); } mark(key); }}, label); items.push(b); list.append(b); };
+  const mark = key => items.forEach(b => b.setAttribute('aria-current', String(b.dataset.k === key)));
+  if (W.length) { list.append(el('p', {class: 'eyebrow'}, 'Accueil')); W.forEach((w, i) => add((i + 1) + '. ' + (w.t || 'Écran d\'accueil'), 'w=' + i, 'w' + i)); }
+  let n = W.length;
+  ps.forEach((p, i) => {
+    const scr = buildScreens(p); list.append(el('p', {class: 'eyebrow'}, 'Partie ' + (i + 1) + ' · ' + p.title));
+    scr.forEach((sc, j) => { n++; add((j + 1) + ' / ' + scr.length + ' · ' + (sc.sec || sc.ref || 'Écran'), 'p=' + i + '&s=' + j, 'p' + i + 's' + j); });
+  });
+  mark(W.length ? 'w0' : 'p0s0');
+  if (AD.pvMsg) window.removeEventListener('message', AD.pvMsg);
+  AD.pvMsg = e => { if (e.source === frame.contentWindow && e.data && e.data.coursPreview) mark(e.data.coursPreview); };
+  window.addEventListener('message', AD.pvMsg);
+  body.append(el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Preview · ' + c.title), el('span', {class: 'small muted'}, n + ' écrans · vue étudiant : vous pouvez saisir pour essayer, rien n\'est enregistré')),
+    el('div', {class: 'pv'}, list, frame));
+}
+
+/* ---------- Vignettes des images de ressources (pour ne télécharger les grandes images qu'au zoom) ---------- */
+async function makeThumb(blob) {
+  const bmp = await createImageBitmap(blob), k = Math.min(1, 360 / Math.max(bmp.width, bmp.height)), cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.round(bmp.width * k)); cv.height = Math.max(1, Math.round(bmp.height * k));
+  cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('Vignette impossible.')), 'image/jpeg', 0.78));
+}
+async function addThumb(courseId, f, blob) {
+  const th = await makeThumb(blob), name = 'vignette_' + String(f.name).replace(/\.[A-Za-z0-9]+$/, '') + '.jpg';
+  const t = await aapi('cours_admin_upload_start', {p_kind: 'resource', p_course: courseId, p_part: f.part || '', p_name: name, p_size: th.size, p_mime: 'image/jpeg'});
+  await putFile(t.path, new File([th], name, {type: 'image/jpeg'}));
+  await aapi('cours_admin_upload_done', {p_file: t.id});
+  await aapi('cours_admin_thumb_set', {p_thumb: t.id, p_of: f.id});
+  return th.size;
+}
+
+/* ---------- Aiguillage : espace étudiant, backoffice ou aperçu d'un cours ---------- */
+window.addEventListener('hashchange', () => { if (S.preview && location.hash.startsWith('#preview')) previewGo(); else location.reload(); });
 versionTag();
-if (location.hash === '#admin') adminStart(); else studentStart();
+if (location.hash === '#admin') adminStart(); else if (location.hash.startsWith('#preview')) previewStart(); else studentStart();
 
 </script>
 </body>
