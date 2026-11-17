@@ -527,6 +527,64 @@ table.livs td{vertical-align:top}
 .pvframe{width:100%;height:calc(100vh - 210px);min-height:560px;border:0;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line-strong),var(--shadow);background:#fff}
 @media (max-width:899px){.pv{grid-template-columns:1fr}.pvlist{max-height:180px}}
 
+/* ---------- Version 2.2 ---------- */
+/* Galerie : drapeau de fin de TP, liseré bleu pour une demande d'aide (plus de macaron texte) */
+.gcard.help,.gteam.help{box-shadow:inset 0 0 0 2px var(--accent);background:#fff}
+.ghelp,.fhelp,.gneeds,.ghelpmsg{display:none}
+.gflag{position:absolute;right:-7px;bottom:-7px;width:26px;height:26px;border-radius:9px;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px var(--line-strong),0 2px 6px rgba(1,78,126,.14)}
+.gnote{right:auto;left:-6px}
+.face.help .ava{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--accent);animation:none}
+/* Tuiles de groupe : note et complétion centrées sous les photos */
+.ava.team{width:88px;height:88px;border-radius:14px;font-size:20px}
+.gteam{padding:12px 12px 10px;gap:8px;min-width:0}
+.gteam .faces{gap:5px}
+.gteam-s{display:flex;justify-content:center;align-items:center;gap:5px;width:100%}
+.gteam-s .pill{margin:0}
+.gteam-c{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--brand);color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Panneau latéral : largeur réglable, ou fenêtre centrée */
+.drawer{width:var(--dw,min(620px,48vw))}
+body:has(.drawer:not(.win)) .adm{margin-right:var(--dw,min(620px,48vw))}
+body:has(.drawer.win) .adm{margin-right:0}
+.drawer-h{position:absolute;left:-5px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:2;touch-action:none}
+.drawer-h:hover,.drawer-h:focus-visible,body.resizing .drawer-h{background:rgba(0,128,255,.22);outline:0}
+body.resizing{user-select:none;cursor:col-resize}
+.drawer.win{top:10vh;bottom:auto;left:10vw;right:auto;width:80vw;height:80vh;border-radius:16px;z-index:31;overflow:hidden}
+.drawer.win .drawer-h{display:none}
+.drawer-veil{position:fixed;inset:0;z-index:30;background:rgba(0,24,40,.38)}
+@media (max-width:899px){.drawer:not(.win){width:100%}body:has(.drawer:not(.win)) .adm{margin-right:0}.drawer-h{display:none}.drawer.win{top:4vh;left:3vw;width:94vw;height:92vh}}
+/* Réglages d'envoi */
+.mailgrid{display:grid;grid-template-columns:2fr 90px 2fr 2fr 2fr;gap:10px;align-items:end}
+@media (max-width:1100px){.mailgrid{grid-template-columns:1fr 1fr}}
+/* Résultats */
+.tablewrap{overflow:auto}
+table.results th{white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.rcell{appearance:none;border:0;background:transparent;padding:4px 6px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:inherit}
+.rcell:hover,.rcell:focus-visible{background:var(--wash);outline:0}
+.gr{display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.02em;background:#eef1f3;color:var(--slate)}
+.gr-TB{background:var(--brand);color:#fff} .gr-B{background:#cfe0ec;color:var(--brand)} .gr-AB{background:#fff;color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)} .gr-NOK{background:#fff;color:#a23b1c;box-shadow:inset 0 0 0 1px #d9a08c}
+.gr.prop{opacity:.55;font-style:italic;font-weight:500}
+.rcom{font-size:11px}
+.rcomment{appearance:none;border:0;background:transparent;font:inherit;text-align:left;cursor:pointer;padding:4px 6px;border-radius:8px;max-width:420px;color:inherit;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcomment:hover,.rcomment:focus-visible{background:var(--wash);outline:0} .rcomment.muted{color:var(--slate);opacity:.7}
+.rpop{position:absolute;z-index:35;background:#fff;border-radius:14px;box-shadow:var(--shadow-lg),0 0 0 1px var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:9px;overflow:auto}
+.rpop h3{margin:0;font-size:16px}
+.rpop>*{flex-shrink:0}
+.rchoice{display:flex;flex-direction:column;gap:2px}
+.ropt{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:14px}
+.ropt:hover{background:var(--wash)} .ropt input{accent-color:var(--brand);flex:none}
+.ropt:has(input:checked){background:var(--wash);font-weight:600}
+.rlivs{display:flex;flex-direction:column;gap:2px;font-size:12.5px;max-height:210px;overflow:auto;padding:6px 8px;border-radius:10px;background:rgba(1,78,126,.035)}
+.rlivs-p{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-top:5px}
+.rliv{display:flex;align-items:center;gap:8px;padding:2px 0}
+.rn{font-variant-numeric:tabular-nums;color:var(--slate);white-space:nowrap} .rn.on{color:var(--brand);font-weight:700}
+.rchart{display:flex;align-items:flex-end;gap:18px;height:190px;padding:6px 4px 0}
+.rbar{flex:1 1 0;max-width:120px;height:100%;display:flex;flex-direction:column;align-items:center;gap:5px}
+.rbar-n{font-size:14px;font-weight:600;color:var(--brand);font-variant-numeric:tabular-nums}
+.rbar-col{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;border-bottom:1px solid var(--line-strong)}
+.rbar-col i{display:block;background:var(--brand);border-radius:6px 6px 0 0;min-height:3px} .rbar-col i.prop{background:#a9c8dd} .rbar-col i.prop+i{border-radius:0}
+.rbar.none .rbar-col i{background:#cfd6db} .rbar.none .rbar-n{color:var(--slate)}
+.rbar-l{font-size:12px;font-weight:600;color:var(--slate)}
+
 </style>
 </head>
 <body>
@@ -716,6 +774,15 @@ const FileCache = {
 function pokeHttp(topic, payload) {
   return fetch(SUPA + '/realtime/v1/api/broadcast', {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify({messages: [{topic, event: 'poke', payload: payload || {}}]})}).catch(() => {});
 }
+/* Appel d'une fonction serveur (notation par IA, envoi d'e-mails). */
+async function fnCall(name, body) {
+  let res;
+  try { res = await fetch(SUPA + '/functions/v1/' + name, {method: 'POST', headers: {...HEAD, 'Content-Type': 'application/json'}, body: JSON.stringify(body || {})}); }
+  catch (e) { throw new Error('Connexion impossible. Vérifiez le réseau.'); }
+  const d = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(String((d && d.message) || 'Erreur ' + res.status).replace(/^RULE\|/, ''));
+  return d;
+}
 function saveBlob(blob, name) {
   const u = URL.createObjectURL(blob), a = el('a', {href: u, download: name});
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000);
@@ -809,8 +876,14 @@ const linkNorm = v => { v = String(v || '').trim(); if (/^www\./i.test(v)) v = '
 const isUrl = v => /^https?:\/\/[^\s<>"']+$/i.test(v);
 
 /* ============ Version de la plateforme et journal des versions ============ */
-const VERSION = '2.1.0';
+const VERSION = '2.2.0';
 const CHANGELOG = [
+  {v: '2.2.0', date: '17/11/2026', title: 'Connexion par mail, messages aux étudiants, résultats', items: [
+    'Connexion étudiante par code à 6 chiffres reçu par mail (à activer dans l\'onglet Codes) ; les codes imprimés restent valables en secours.',
+    'Panneau latéral d\'un étudiant : bouton « Écrire » pour lui envoyer un e-mail depuis l\'adresse sans réponse, largeur réglable à la souris, affichage possible en fenêtre centrée.',
+    'Nouvel onglet Résultat : répartition des notes, note finale par cours (NOK, AB, B, TB, partagée par les membres d\'un groupe, avec commentaire), note définitive et commentaire final par étudiant, export CSV.',
+    'Onglet Cours : plus de macaron texte sur les tuiles ; un drapeau signale un TP terminé, l\'état complet s\'affiche au survol.',
+    'Demandes d\'aide : simple liseré bleu autour des photos, sans encart dédié. Tuiles de groupe du suivi : photos plus grandes, note et complétion centrées dessous.']},
   {v: '2.1.0', date: '17/11/2026', title: 'Trafic réduit, pilotage dans le suivi de séance, aperçu du cours', items: [
     'Trafic sortant fortement réduit : photos des ressources en vignettes légères et gardées en cache par le navigateur ; les pages ne relisent plus la base toutes les 2,5 secondes mais sont prévenues des changements par le canal temps réel ; le backoffice ne relit rien quand il n\'est pas regardé et ne recharge que ce qui a changé.',
     'Suivi séance : démarrage et fin de séance, changement de rythme en cliquant sur une partie, complétion par partie, demandes d\'aide mises en avant, groupes classés avant le détail des livrables, réglages de la notation par IA.',
@@ -970,23 +1043,47 @@ function loginScreen(root) {
   if (S.notice) box.append(el('p', {class: 'note warn', role: 'status'}, S.notice));
   const err = el('p', {class: 'note err', hidden: true});
   const mail = el('input', {type: 'email', autocomplete: 'username', spellcheck: 'false', placeholder: 'prenom.nom@etu.uca.fr', 'aria-label': 'Adresse e-mail étudiante', value: LS.get('ident', '')});
-  const code = el('input', {type: 'text', class: 'code-in', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', maxlength: 12, placeholder: 'CODE', 'aria-label': 'Votre code personnel'});
+  const code = el('input', {type: 'text', class: 'code-in', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', maxlength: 12, placeholder: 'CODE', 'aria-label': 'Votre code'});
   const go1 = el('button', {class: 'btn cta', type: 'submit'}, 'Continuer'), go2 = el('button', {class: 'btn cta', type: 'submit'}, 'Se connecter');
+  // Deux façons de se connecter : le code reçu par mail (si l'enseignant l'a activé) ou le code personnel imprimé, en secours.
+  let mode = b.otp ? 'otp' : 'print', waitT = null;
+  const lead = el('p', {class: 'big'}), hint = el('p', {class: 'small muted'});
+  const again = el('button', {class: 'btn quiet', type: 'button', onclick: () => sendCode()}, 'Renvoyer un code');
+  const swap = el('button', {class: 'btn quiet', type: 'button', onclick: () => { setMode(mode === 'otp' ? 'print' : 'otp'); if (mode === 'otp') sendCode(); }});
+  const cooldown = () => { let n = 45; again.disabled = true; clearInterval(waitT); const tick = () => { again.textContent = n > 0 ? 'Renvoyer un code (' + n + ' s)' : 'Renvoyer un code'; if (n-- <= 0) { again.disabled = false; clearInterval(waitT); } }; tick(); waitT = setInterval(tick, 1000); };
+  const sendCode = async () => {
+    cooldown(); err.hidden = true;
+    try { await fnCall('cours-mail', {action: 'otp', ident: mail.value.trim()}); } catch (e) {}
+    code.focus();
+  };
+  const setMode = m => {
+    mode = m; err.hidden = true; code.value = '';
+    const otp = m === 'otp';
+    lead.textContent = otp ? 'Saisissez le code à 6 chiffres reçu par mail.' : 'Saisissez le code personnel remis par l\'enseignant.';
+    hint.textContent = otp ? 'Si cette adresse est celle d\'un étudiant inscrit, un code vient d\'y être envoyé. Il est valable 10 minutes. Pensez à regarder les courriers indésirables.' : (b.otp ? 'C\'est le code imprimé distribué en séance. Il ne change pas.' : '');
+    hint.hidden = !hint.textContent; again.hidden = !otp; swap.hidden = !b.otp;
+    swap.textContent = otp ? 'J\'ai un code imprimé' : 'Recevoir un code par mail';
+    code.placeholder = otp ? '000000' : 'CODE'; code.maxLength = otp ? 6 : 12;
+    code.setAttribute('inputmode', otp ? 'numeric' : 'text'); code.setAttribute('autocomplete', otp ? 'one-time-code' : 'off');
+    code.focus();
+  };
   const step2 = el('form', {class: 'stack', hidden: true, onsubmit: async e => {
     e.preventDefault(); go2.disabled = true; err.hidden = true;
     try {
-      const r = await api('cours_login_email', {p_ident: mail.value.trim(), p_code: code.value, p_ua: navigator.userAgent});
+      const r = await api(mode === 'otp' ? 'cours_login_otp' : 'cours_login_email', {p_ident: mail.value.trim(), p_code: code.value, p_ua: navigator.userAgent});
       if (!r.ok) { err.hidden = false; err.textContent = r.error; go2.disabled = false; code.select(); return; }
+      clearInterval(waitT);
       S.tok = r.token; S.me = r.student; S.notice = null; lastAct = Date.now(); actFlag = true; LS.set('tok', S.tok); LS.set('me', JSON.stringify(S.me));
       S.view = 'boot'; render(); await syncOnce(); startLoop();
     } catch (e2) { err.hidden = false; err.textContent = e2.message; go2.disabled = false; }
-  }}, el('p', {class: 'big'}, 'Saisissez le code personnel remis par l\'enseignant.'), code, err,
-    el('div', {class: 'row'}, go2, el('button', {class: 'btn quiet', type: 'button', onclick: () => { step2.hidden = true; step1.hidden = false; err.hidden = true; mail.focus(); }}, 'Changer d\'adresse')));
+  }}, lead, hint, code, err,
+    el('div', {class: 'row'}, go2, again, swap, el('button', {class: 'btn quiet', type: 'button', onclick: () => { clearInterval(waitT); step2.hidden = true; step1.hidden = false; err.hidden = true; mail.focus(); }}, 'Changer d\'adresse')));
   const step1 = el('form', {class: 'stack', onsubmit: e => {
     e.preventDefault(); const v = mail.value.trim(); if (v.length < 4) return mail.focus();
-    LS.set('ident', v); api('cours_login_begin', {p_ident: v}).catch(() => {});
-    step1.hidden = true; step2.hidden = false; code.value = ''; code.focus();
-  }}, el('p', {class: 'big'}, 'Connectez-vous avec votre adresse e-mail étudiante.'), mail, el('div', {class: 'row'}, go1));
+    LS.set('ident', v);
+    step1.hidden = true; step2.hidden = false; setMode(b.otp ? 'otp' : 'print');
+    if (b.otp) sendCode(); else api('cours_login_begin', {p_ident: v}).catch(() => {});
+  }}, el('p', {class: 'big'}, b.otp ? 'Connectez-vous avec votre adresse e-mail étudiante : vous recevrez un code par mail.' : 'Connectez-vous avec votre adresse e-mail étudiante.'), mail, el('div', {class: 'row'}, go1));
   box.append(step1, step2); mail.focus();
 }
 function logout(expired, why) {
@@ -1980,7 +2077,7 @@ function aPaceState(g, c) {
   return ['Écran de passage affiché', 'warn'];
 }
 
-const ATABS = [['cours', 'Cours'], ['suivi', 'Suivi séance'], ['etudiants', 'Étudiants'], ['contenu', 'Contenu'], ['preview', 'Preview'], ['codes', 'Codes'], ['sauv', 'Sauvegardes'], ['versions', 'Versions']];
+const ATABS = [['cours', 'Cours'], ['suivi', 'Suivi séance'], ['etudiants', 'Étudiants'], ['resultat', 'Résultat'], ['contenu', 'Contenu'], ['preview', 'Preview'], ['codes', 'Codes'], ['sauv', 'Sauvegardes'], ['versions', 'Versions']];
 function adminRender() {
   const root = $('#app'); root.className = ''; root.textContent = '';
   if (!ATABS.some(t => t[0] === AD.tab)) AD.tab = 'cours';
@@ -2003,7 +2100,7 @@ function adminPaint(force) {
   if (AD.tab === 'cours') { if (force || !busy($('#adm-ctl'))) paintCtl(); if (!$('.gmenu')) paintGallery(body, force); }
   else if (AD.tab === 'suivi') { if (force || !busy(body)) paintSuivi(body); }
   else if (AD.tab === 'etudiants') { if (force || !busy(body)) paintPromo(body); }
-  else if (force) ({contenu: paintCours, preview: paintPreview, codes: paintCodes, sauv: paintBackups, versions: paintVersions})[AD.tab](body);
+  else if (force) ({resultat: paintResults, contenu: paintCours, preview: paintPreview, codes: paintCodes, sauv: paintBackups, versions: paintVersions})[AD.tab](body);
 }
 /* État en direct, visible depuis tous les onglets : plateforme, séance, demandes d'aide, prise de parole. */
 function paintLive() {
@@ -2081,11 +2178,11 @@ function paintPromo(body) {
 }
 
 /* ---------- Panneau de détail d'un étudiant ---------- */
-function closeDrawer() { AD.open = null; document.querySelectorAll('.drawer').forEach(x => x.remove()); document.querySelectorAll('tr.sel').forEach(x => x.classList.remove('sel')); }
+function closeDrawer() { AD.open = null; document.querySelectorAll('.drawer, .drawer-veil').forEach(x => x.remove()); document.querySelectorAll('tr.sel').forEach(x => x.classList.remove('sel')); }
 async function openDrawer(sid) {
   AD.open = {sid, course: AD.st.course_id, data: null, list: null};
-  document.querySelectorAll('.drawer').forEach(x => x.remove());
-  document.body.append(el('aside', {class: 'drawer', 'aria-label': 'Détail de l\'étudiant'}, el('div', {class: 'drawer-b', id: 'drawer-b'}, el('p', {class: 'muted'}, 'Chargement…'))));
+  document.querySelectorAll('.drawer, .drawer-veil').forEach(x => x.remove());
+  document.body.append(drawerShell()); drawerApply();
   if (AD.tab === 'etudiants') paintPromo($('#adm-body'));
   aapi('cours_admin_student', {p_student: sid}).then(l => { if (AD.open && AD.open.sid === sid) { AD.open.list = l; drawerPaint(); } }).catch(() => {});
   await drawerLoad(true);
@@ -2119,7 +2216,7 @@ function drawerPaint() {
   const run = fn => async () => { try { await fn(); await adminPoll(false); await drawerLoad(true); } catch (e) { toast(e.message, 'err'); } };
   b.textContent = '';
   const [sl, sc] = cur ? aStatus(u, st.groups.find(x => x.id === u.group_id)) : ['', ''];
-  b.append(el('div', {class: 'row'}, avatar(u), el('div', {class: 'grow'}, el('h2', null, u.prenom + ' ' + u.nom), el('div', {class: 'small muted'}, [u.email, u.student_no, u.groupe, u.note].filter(Boolean).join(' · '))), el('button', {class: 'btn x', 'aria-label': 'Fermer', onclick: () => { closeDrawer(); }}, '✕')));
+  b.append(el('div', {class: 'row'}, avatar(u), el('div', {class: 'grow'}, el('h2', null, u.prenom + ' ' + u.nom), el('div', {class: 'small muted'}, [u.email, u.student_no, u.groupe, u.note].filter(Boolean).join(' · '))), drawerTools(u)));
   const csel = el('select', {'aria-label': 'Cours consulté', onchange: () => { o.course = csel.value; o.data = null; drawerLoad(true); }}, (o.list && o.list.length ? o.list : [{course_id: st.course_id, title: c ? c.title : ''}]).map(x => el('option', {value: x.course_id, selected: x.course_id === o.course}, x.title)));
   if (!(o.list || []).some(x => x.course_id === st.course_id) && o.list && o.list.length) csel.prepend(el('option', {value: st.course_id, selected: cur}, (aCourse() || {}).title || ''));
   b.append(el('div', {class: 'row'}, cur ? el('span', {class: 'pill ' + sc}, sl) : el('span', {class: 'pill'}, 'Cours précédent'), el('span', {class: 'dot-on' + (u.online ? ' on' : '')}), el('span', {class: 'small muted'}, u.online ? 'en ligne' : u.last_seen ? 'vu à ' + fmtClock(u.last_seen) : 'jamais vu'), el('span', {class: 'grow'}), el('div', {style: 'min-width:200px'}, csel)));
@@ -2273,8 +2370,9 @@ function paintCours(body) {
 function paintCodes(body) {
   const st = AD.st; body.textContent = '';
   const url = location.origin + location.pathname;
+  body.append(mailBlock(() => paintCodes(body)));
   body.append(el('div', {class: 'row noprint'}, el('h2', {class: 'grow'}, 'Codes personnels'), el('button', {class: 'btn pri', onclick: () => window.print()}, 'Imprimer les bandelettes')),
-    el('p', {class: 'muted noprint'}, 'Un code par étudiant, à remettre en main propre. L\'étudiant se connecte avec son adresse e-mail (ou son numéro étudiant s\'il n\'a pas d\'adresse), puis son code. Adresse de la plateforme : ', el('code', {class: 'copyable'}, url)));
+    el('p', {class: 'muted noprint'}, 'Un code par étudiant, à remettre en main propre' + (mailCfg().otp ? ' : il sert de secours quand le code par mail n\'arrive pas' : '') + '. L\'étudiant se connecte avec son adresse e-mail (ou son numéro étudiant s\'il n\'a pas d\'adresse), puis son code. Adresse de la plateforme : ', el('code', {class: 'copyable'}, url)));
   const grid = el('div', {class: 'codes'});
   st.students.filter(u => u.active).forEach(u => grid.append(el('div', {class: 'codecard'}, el('b', null, u.nom + ' ' + u.prenom), el('div', {class: 'small muted'}, url.replace(/^https?:\/\//, '')), el('div', {class: 'small'}, 'Identifiant : ' + (u.email || u.student_no || '—')), el('div', {class: 'bigcode'}, u.code))));
   body.append(grid);
@@ -2370,20 +2468,18 @@ function paintGallery(body, force) {
   const first = !$('#gal'), keepScroll = window.scrollY; body.textContent = '';
   const need = act.filter(u => info.get(u.id).needs.length);
   body.append(el('div', {class: 'row'}, el('label', {class: 'switch'}, el('input', {type: 'checkbox', checked: AD.needOnly, onchange: e => { AD.needOnly = e.target.checked; paintGallery(body, true); }}), el('span', null, 'N\'afficher que les étudiants à assister (' + need.length + ')')),
-    el('span', {class: 'small muted'}, 'Pastille verte : connecté. Cliquez sur une photo pour le détail ; le bouton « … » d\'une tuile sert à commenter ou à marquer un absent.' + (c && c.session_active ? '' : ' Hors séance, seules les demandes d\'aide sont à assister.'))));
+    el('span', {class: 'small muted'}, 'Pastille verte : connecté. Drapeau : TP terminé. Liseré bleu : demande d\'aide. Photo grisée : absent. Survolez une photo pour son état, cliquez pour le détail ; le bouton « … » sert à commenter, marquer un absent ou baisser une alerte.' + (c && c.session_active ? '' : ' Hors séance, seules les demandes d\'aide sont à assister.'))));
   const run = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
   const card = u => {
-    const i = info.get(u.id), [sl, sc] = i.status, help = !!u.help_at, abs = u.present === false;
+    const i = info.get(u.id), sl = i.status[0], help = !!u.help_at, abs = u.present === false, done = !!(i.g && i.g.finished_at);
+    const tip = [abs ? 'Absent' : sl, ...i.needs.filter(n => n !== sl && !/aide/.test(n)), help ? 'Demande de l\'aide' + (u.help_msg ? ' : « ' + u.help_msg + ' »' : '') : null, u.online ? 'connecté' : (u.last_seen ? 'non connecté, vu à ' + fmtClock(u.last_seen) : 'non connecté')].filter(Boolean).join(' · ');
     const more = el('button', {class: 'gmore', type: 'button', title: 'Commenter, marquer absent…', 'aria-label': 'Actions pour ' + u.prenom + ' ' + u.nom, 'aria-haspopup': 'menu', onclick: e => { e.stopPropagation(); tileMenu(u, more, run); }}, '…');
-    return el('div', {class: 'gcard' + (help ? ' help' : '') + (abs ? ' absent' : '') + (AD.open && AD.open.sid === u.id ? ' sel' : ''), 'data-sid': u.id}, more,
-      el('button', {class: 'gphoto', type: 'button', title: 'Voir le détail de ' + u.prenom + ' ' + u.nom, onclick: () => openDrawer(u.id)}, avatar(u, 'big'),
-        el('span', {class: 'gdot' + (u.online ? ' on' : ''), title: u.online ? 'Connecté à la plateforme' : (u.last_seen ? 'Non connecté · vu à ' + fmtClock(u.last_seen) : 'Non connecté')}),
-        help ? el('span', {class: 'ghelp', title: u.help_msg || 'Demande de l\'aide'}, '✋') : null, u.remark ? el('span', {class: 'gnote', title: u.remark}, '💬') : null),
-      el('div', {class: 'gname'}, el('b', null, u.prenom), ' ' + u.nom),
-      el('div', null, abs ? el('span', {class: 'pill warn'}, 'Absent') : el('span', {class: 'pill ' + sc}, sl)),
-      i.needs.length ? el('div', {class: 'gneeds'}, i.needs.filter(n => n !== sl).map(n => el('span', {class: 'need' + (/aide/.test(n) ? ' hot' : '')}, n))) : null,
-      help && u.help_msg ? el('div', {class: 'ghelpmsg'}, '« ' + u.help_msg + ' »') : null,
-      help ? el('button', {class: 'btn sm', type: 'button', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte') : null);
+    const flag = done ? el('span', {class: 'gflag', role: 'img', 'aria-label': 'TP terminé', title: 'TP terminé'}) : null;
+    if (flag) flag.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M6 21V4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M7 4.5h11l-2.6 4 2.6 4H7z" fill="currentColor"/></svg>';
+    return el('div', {class: 'gcard' + (help ? ' help' : '') + (abs ? ' absent' : '') + (AD.open && AD.open.sid === u.id ? ' sel' : ''), 'data-sid': u.id, 'data-status': abs ? 'Absent' : sl}, more,
+      el('button', {class: 'gphoto', type: 'button', title: u.prenom + ' ' + u.nom + ' — ' + tip, 'aria-label': u.prenom + ' ' + u.nom + ' : ' + tip + '. Voir le détail.', onclick: () => openDrawer(u.id)}, avatar(u, 'big'),
+        el('span', {class: 'gdot' + (u.online ? ' on' : '')}), flag, u.remark ? el('span', {class: 'gnote', title: u.remark}, '💬') : null),
+      el('div', {class: 'gname'}, el('b', null, u.prenom), ' ' + u.nom));
   };
   // Unités : un cadre par TP à plusieurs, une tuile par étudiant seul ; ordre alphabétique du premier membre.
   const units = [], seen = new Set();
@@ -2421,7 +2517,7 @@ function paintSuivi(body) {
   // Les absents ne figurent pas dans le suivi.
   const groups = W.groups.map(g => ({...g, us: g.members.map(id => U.get(id)).filter(u => u && u.active && u.present !== false), stats: groupStats(g, livs)})).filter(g => g.us.length);
   const gname = g => g.us.map(u => u.prenom + ' ' + u.nom).join(', ');
-  const faces = (g, cls) => el('span', {class: 'faces'}, g.us.map(u => el('button', {class: 'face' + (u.help_at ? ' help' : ''), type: 'button', title: u.prenom + ' ' + u.nom + (u.help_at ? ' · demande de l\'aide' : ''), onclick: e => { e.stopPropagation(); openDrawer(u.id); }}, avatar(u, cls), u.help_at ? el('span', {class: 'fhelp'}, '✋') : null)));
+  const faces = (g, cls) => el('span', {class: 'faces'}, g.us.map(u => el('button', {class: 'face' + (u.help_at ? ' help' : ''), type: 'button', title: u.prenom + ' ' + u.nom + (u.help_at ? ' · demande de l\'aide depuis ' + fmtTime(u.help_at) + (u.help_msg ? ' : « ' + u.help_msg + ' »' : '') + ' · cliquez pour ouvrir le détail et baisser l\'alerte' : ''), onclick: e => { e.stopPropagation(); openDrawer(u.id); }}, avatar(u, cls))));
   const run = fn => async () => { try { await fn(); await adminPoll(false); adminPaint(true); } catch (e) { toast(e.message, 'err'); } };
   // 1. Pilotage de la séance et déroulé du TP par rapport au temps prévu
   const mins = ps.map(p => p.minutes || 30), total = mins.reduce((s, x) => s + x, 0) || 1, cum = [0]; mins.forEach(m => cum.push(cum[cum.length - 1] + m));
@@ -2460,26 +2556,18 @@ function paintSuivi(body) {
   const nowhere = groups.filter(g => pos(g) < 0);
   if (nowhere.length) el1.append(el('div', {class: 'row small muted'}, 'Pas encore entrés dans une partie : ', nowhere.map(g => faces(g, 'mini'))));
   body.append(el1);
-  // 2. Demandes d'aide en cours
-  const helps = st.students.filter(u => u.active && u.help_at && u.present !== false).sort((a, b) => new Date(a.help_at) - new Date(b.help_at));
-  if (helps.length) body.append(el('div', {class: 'sub helpbox', role: 'status'}, el('h2', null, '✋ ' + helps.length + (helps.length > 1 ? ' demandes d\'aide' : ' demande d\'aide')),
-    el('div', {class: 'helplist'}, helps.map(u => el('div', {class: 'helpitem'}, el('button', {class: 'face help', type: 'button', title: 'Voir le détail', onclick: () => openDrawer(u.id)}, avatar(u, 'mid')),
-      el('div', {class: 'grow'}, el('b', null, u.prenom + ' ' + u.nom), el('div', {class: 'small'}, 'depuis ' + fmtTime(u.help_at) + (u.help_msg ? ' · « ' + u.help_msg + ' »' : ''))),
-      el('button', {class: 'btn sm', type: 'button', onclick: run(() => ado('help_clear', {course: st.course_id, student: u.id}))}, 'Baisser l\'alerte'))))));
   // 3. Groupes classés : qualité des réponses et complétion
   const ranked = [...groups].sort((a, b) => b.stats.rank - a.stats.rank || b.stats.completion - a.stats.completion || gname(a).localeCompare(gname(b)));
   const n = ranked.length, nTop = n >= 3 ? Math.ceil(n / 3) : n, nLow = n >= 3 ? Math.floor(n / 3) : 0;
   const buckets = [['Meilleures réponses', ranked.slice(0, nTop)], ['Médian', ranked.slice(nTop, n - nLow)], ['Moins bonnes réponses', ranked.slice(n - nLow)]];
-  const el3 = el('div', {class: 'sub'}, el('h2', null, 'Groupes'), el('p', {class: 'small muted'}, 'Classés selon la qualité des réponses rendues et le niveau de complétion. Sur chaque groupe : note moyenne et part des livrables rendus. Les absents ne sont pas affichés.'));
+  const el3 = el('div', {class: 'sub'}, el('h2', null, 'Groupes'), el('p', {class: 'small muted'}, 'Classés selon la qualité des réponses rendues et le niveau de complétion. Sous chaque groupe : note moyenne et part des livrables rendus. Un liseré bleu signale une demande d\'aide : cliquez sur la photo pour la lire et baisser l\'alerte. Les absents ne sont pas affichés.'));
   buckets.forEach(([title, list]) => {
     if (!list.length) return;
     el3.append(el('h3', {class: 'bucket-t'}, title + ' (' + list.length + ')'), el('div', {class: 'bucket'}, list.map(g => {
-      const help = g.us.filter(u => u.help_at);
-      return el('div', {class: 'gteam' + (help.length ? ' help' : '')}, el('div', {class: 'gteam-f'}, faces(g, 'mid'),
-          el('span', {class: 'badge-q pill qual q' + (g.stats.quality == null ? 0 : Math.round(g.stats.quality)), title: 'Qualité moyenne des livrables rendus'}, '★ ' + fmtNote(g.stats.quality)),
-          el('span', {class: 'badge-c', title: 'Livrables rendus : ' + g.stats.done + ' sur ' + livs.length}, Math.round(100 * g.stats.completion) + ' %')),
-        el('div', {class: 'gteam-n'}, g.us.map(u => u.prenom).join(' · ')),
-        help.length ? el('button', {class: 'btn sm', type: 'button', title: help.map(u => u.prenom + (u.help_msg ? ' : ' + u.help_msg : '')).join('\n'), onclick: run(async () => { for (const u of help) await ado('help_clear', {course: st.course_id, student: u.id}); })}, '✋ Baisser l\'alerte') : null);
+      return el('div', {class: 'gteam' + (g.us.some(u => u.help_at) ? ' help' : '')}, faces(g, 'team'),
+        el('div', {class: 'gteam-s'}, el('span', {class: 'pill qual q' + (g.stats.quality == null ? 0 : Math.round(g.stats.quality)), title: 'Qualité moyenne des livrables rendus'}, '★ ' + fmtNote(g.stats.quality)),
+          el('span', {class: 'gteam-c', title: 'Livrables rendus : ' + g.stats.done + ' sur ' + livs.length}, Math.round(100 * g.stats.completion) + ' %')),
+        el('div', {class: 'gteam-n'}, g.us.map(u => u.prenom).join(' · ')));
     })));
   });
   if (!n) el3.append(el('p', {class: 'muted'}, 'Aucun groupe n\'a encore commencé.'));
@@ -2676,6 +2764,204 @@ async function addThumb(courseId, f, blob) {
   await aapi('cours_admin_upload_done', {p_file: t.id});
   await aapi('cours_admin_thumb_set', {p_thumb: t.id, p_of: f.id});
   return th.size;
+}
+
+/* ============ Backoffice, suite (version 2.2) : panneau latéral, e-mails, résultats ============ */
+
+/* ---------- Panneau latéral : largeur réglable, ou fenêtre centrée ---------- */
+const drawerClamp = w => Math.max(380, Math.min(window.innerWidth - 280, w));
+function drawerApply() {
+  const w = parseInt(LS.get('dw', ''), 10), modal = LS.get('dmode', 'side') === 'modal', d = $('.drawer');
+  document.documentElement.style.setProperty('--dw', w ? drawerClamp(w) + 'px' : 'min(620px, 48vw)');
+  if (!d) return;
+  d.classList.toggle('win', modal);
+  document.querySelectorAll('.drawer-veil').forEach(x => x.remove());
+  if (modal) document.body.append(el('div', {class: 'drawer-veil', onclick: () => closeDrawer()}));
+}
+function drawerShell() {
+  const h = el('div', {class: 'drawer-h', role: 'separator', 'aria-orientation': 'vertical', tabindex: '0', title: 'Glisser pour changer la largeur du panneau', 'aria-label': 'Largeur du panneau'});
+  const set = (w, save) => { const v = drawerClamp(w); document.documentElement.style.setProperty('--dw', v + 'px'); if (save) LS.set('dw', v); };
+  h.addEventListener('pointerdown', e => {
+    e.preventDefault(); h.setPointerCapture(e.pointerId); document.body.classList.add('resizing');
+    const move = ev => set(window.innerWidth - ev.clientX, false);
+    const up = ev => { h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up); document.body.classList.remove('resizing'); set(window.innerWidth - ev.clientX, true); };
+    h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+  });
+  h.addEventListener('keydown', e => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); const d = $('.drawer'); set(d.getBoundingClientRect().width + (e.key === 'ArrowLeft' ? 24 : -24), true); });
+  return el('aside', {class: 'drawer', 'aria-label': 'Détail de l\'étudiant'}, h, el('div', {class: 'drawer-b', id: 'drawer-b'}, el('p', {class: 'muted'}, 'Chargement…')));
+}
+/* Boutons d'en-tête du panneau : écrire à l'étudiant, changer de présentation, fermer. */
+function drawerTools(u) {
+  const modal = LS.get('dmode', 'side') === 'modal';
+  return [
+    el('button', {class: 'btn sm', type: 'button', id: 'mail-btn', title: u.email ? 'Envoyer un e-mail à ' + u.prenom : 'Cet étudiant n\'a pas d\'adresse e-mail', disabled: !u.email, onclick: () => mailModal(u)}, '✉ Écrire'),
+    el('button', {class: 'btn x', type: 'button', id: 'drawer-mode', title: modal ? 'Ancrer le panneau à droite' : 'Afficher en fenêtre centrée', 'aria-label': modal ? 'Ancrer le panneau à droite' : 'Afficher en fenêtre centrée', onclick: () => { LS.set('dmode', modal ? 'side' : 'modal'); drawerApply(); drawerPaint(); }}, modal ? '⇥' : '⤢'),
+    el('button', {class: 'btn x', type: 'button', 'aria-label': 'Fermer', title: 'Fermer', onclick: () => { closeDrawer(); }}, '✕')];
+}
+
+/* ---------- E-mails ---------- */
+const mailCfg = () => (AD.st && AD.st.settings.mail) || {host: '', port: 465, user: '', name: '', otp: false, has_pass: false};
+const mailReady = () => { const m = mailCfg(); return !!(m.host && m.user && m.has_pass); };
+function mailModal(u) {
+  const m = mailCfg();
+  modal((b, close) => {
+    const subj = el('input', {type: 'text', maxlength: 150, 'aria-label': 'Objet', placeholder: 'Objet'}), txt = el('textarea', {'aria-label': 'Message', placeholder: 'Votre message à ' + u.prenom, style: 'min-height:170px', maxlength: 5000});
+    const err = el('p', {class: 'note err', hidden: true});
+    const go = el('button', {class: 'btn pri', type: 'button', disabled: !mailReady(), onclick: async () => {
+      if (!subj.value.trim() || !txt.value.trim()) { err.hidden = false; err.textContent = 'L\'objet et le message sont obligatoires.'; return; }
+      go.disabled = true; err.hidden = true; go.textContent = 'Envoi…';
+      try { await fnCall('cours-mail', {action: 'send', token: AD.tok, student: u.id, subject: subj.value, body: txt.value}); close(); toast('Message envoyé à ' + u.prenom + ' ' + u.nom + '.'); }
+      catch (e) { err.hidden = false; err.textContent = e.message; go.disabled = false; go.textContent = 'Envoyer'; }
+    }}, 'Envoyer');
+    b.append(el('h2', null, 'Écrire à ' + u.prenom + ' ' + u.nom), el('p', {class: 'small muted'}, 'Destinataire : ' + u.email),
+      mailReady() ? el('p', {class: 'note'}, 'Le message part de ' + m.user + ', une adresse sans réponse (noreply) : ' + u.prenom + ' ne pourra pas y répondre. Cette précision est ajoutée en bas du mail.')
+                  : el('p', {class: 'note warn'}, 'L\'envoi d\'e-mails n\'est pas encore configuré : renseignez le serveur et le mot de passe dans l\'onglet Codes.'),
+      subj, txt, err, el('div', {class: 'row'}, go, el('button', {class: 'btn', type: 'button', onclick: close}, 'Annuler')));
+  });
+}
+/* Réglages d'envoi (onglet Codes). Le mot de passe est enregistré en base et n'est jamais renvoyé au navigateur. */
+function mailBlock(repaint) {
+  const m = mailCfg(), act = fn => async () => { try { await fn(); await adminPoll(false); repaint(); } catch (e) { toast(e.message, 'err'); } };
+  const host = el('input', {type: 'text', value: m.host || '', placeholder: 'fluidy.fr', 'aria-label': 'Serveur d\'envoi (SMTP)', spellcheck: 'false'}), port = el('input', {type: 'number', value: m.port || 465, min: 1, max: 65535, 'aria-label': 'Port', style: 'width:90px'});
+  const user = el('input', {type: 'text', value: m.user || '', placeholder: 'school@fluidy.fr', 'aria-label': 'Compte d\'envoi', spellcheck: 'false', autocomplete: 'off'}), name = el('input', {type: 'text', value: m.name || '', 'aria-label': 'Nom affiché de l\'expéditeur'});
+  const pass = el('input', {type: 'password', id: 'mail-pass', autocomplete: 'new-password', placeholder: m.has_pass ? 'Mot de passe enregistré · saisir pour le remplacer' : 'Mot de passe du compte', 'aria-label': 'Mot de passe du compte d\'envoi'});
+  const to = el('input', {type: 'email', placeholder: 'Adresse pour l\'essai', 'aria-label': 'Adresse pour l\'essai', style: 'max-width:280px'});
+  const lab = (t, f) => el('label', {class: 'stack', style: 'gap:4px'}, el('span', {class: 'small muted'}, t), f);
+  const testBtn = el('button', {class: 'btn', type: 'button', id: 'mail-test', disabled: !mailReady(), onclick: async () => {
+    if (!to.value.trim()) return to.focus();
+    testBtn.disabled = true; testBtn.textContent = 'Envoi…';
+    try { await fnCall('cours-mail', {action: 'test', token: AD.tok, to: to.value.trim()}); toast('Message d\'essai envoyé à ' + to.value.trim() + '.'); } catch (e) { toast(e.message, 'err'); }
+    await adminPoll(false); repaint();
+  }}, 'Envoyer un e-mail d\'essai');
+  const state = !mailReady() ? el('span', {class: 'pill warn'}, 'À configurer') : m.last_err ? el('span', {class: 'pill warn', title: m.last_err}, 'Dernier envoi en échec') : el('span', {class: 'pill ok'}, m.last_at ? 'Dernier envoi réussi à ' + fmtClock(m.last_at) : 'Configuré');
+  return el('div', {class: 'sub first noprint', id: 'mail-box'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Connexion par e-mail'), state),
+    el('p', {class: 'muted'}, 'Quand cette option est active, l\'étudiant saisit son adresse et reçoit un code à 6 chiffres valable 10 minutes. Les codes imprimés ci-dessous restent valables en secours. Les messages partent d\'une adresse sans réponse (noreply).'),
+    el('label', {class: 'switch'}, el('input', {type: 'checkbox', id: 'mail-otp', checked: !!m.otp, onchange: act(() => aapi('cours_admin_mail_set', {p_args: {otp: $('#mail-otp').checked}}))}), el('span', null, 'Proposer aux étudiants le code de connexion par mail')),
+    m.otp && !mailReady() ? el('p', {class: 'note warn'}, 'L\'option est cochée mais l\'envoi n\'est pas configuré : les étudiants ne voient pour l\'instant que le code imprimé.') : null,
+    el('div', {class: 'mailgrid'}, lab('Serveur d\'envoi (SMTP)', host), lab('Port', port), lab('Compte d\'envoi', user), lab('Nom affiché', name), lab('Mot de passe', pass)),
+    el('div', {class: 'row'}, el('button', {class: 'btn pri', type: 'button', id: 'mail-save', onclick: act(async () => {
+      const a = {host: host.value, port: parseInt(port.value, 10) || 465, user: user.value, name: name.value}; if (pass.value) a.pass = pass.value;
+      await aapi('cours_admin_mail_set', {p_args: a}); toast('Réglages d\'envoi enregistrés.');
+    })}, 'Enregistrer'), el('span', {class: 'grow'}), to, testBtn),
+    m.last_err ? el('p', {class: 'note err'}, 'Dernière erreur d\'envoi' + (m.last_at ? ' (' + fmtClock(m.last_at) + ')' : '') + ' : ' + m.last_err) : null);
+}
+
+/* ---------- Onglet Résultat ---------- */
+const GRADES = [['NOK', 'NOK : insuffisant'], ['AB', 'AB : juste suffisant'], ['B', 'B : travail attendu réalisé'], ['TB', 'TB : travail au-dessus de la moyenne']];
+const GRADE_FULL = Object.fromEntries(GRADES);
+/* Moyenne des livrables notés (un livrable non rendu compte 0), arrondie : 0 = NOK ; 1 ou 2 = AB ; 3 ou 4 = B ; 5 = TB. */
+const gradeOf = avg => { if (avg == null) return null; const r = Math.round(avg); return r <= 0 ? 'NOK' : r <= 2 ? 'AB' : r <= 4 ? 'B' : 'TB'; };
+function proposedGrade(g, livs) {
+  const stats = groupStats(g, livs), noted = livs.filter(l => l.it.t !== 'upload');
+  if (!noted.length) return {avg: null, grade: null, stats};
+  let sum = 0; noted.forEach(l => { const p = stats.per[l.it.id]; if (p.done && p.score != null) sum += p.score; });
+  return {avg: sum / noted.length, grade: gradeOf(sum / noted.length), stats};
+}
+async function loadResults() {
+  const st = AD.st, R = await aapi('cours_admin_results'), works = {};
+  for (const c of st.courses) {
+    if (!AD.contents[c.id]) AD.contents[c.id] = await aapi('cours_admin_course', {p_course: c.id});
+    if (c.id === st.course_id) { if (workStale(0)) await loadWork(); works[c.id] = AD.work.groups; }
+    else works[c.id] = (AD.res && AD.res.works[c.id]) || (await aapi('cours_admin_work2', {p_course: c.id, p_since: 0})).groups;
+  }
+  AD.res = {...R, works, at: Date.now(), view: (AD.res && AD.res.view) || 'final'};
+}
+/* Pour un étudiant et un cours : son groupe, la note proposée et la note choisie. */
+function resultCell(cid, sid) {
+  const R = AD.res, g = (R.works[cid] || []).find(x => x.members.includes(sid)), livs = livrablesOf(AD.contents[cid].content);
+  const prop = g ? proposedGrade(g, livs) : {avg: null, grade: null, stats: null}, row = R.results.find(x => x.course === cid && x.student === sid);
+  return {g, livs, prop, chosen: row && row.grade ? row.grade : null, comment: row ? row.comment : '', grade: (row && row.grade) || prop.grade};
+}
+function closeRpop() { document.querySelectorAll('.rpop').forEach(x => x.remove()); if (AD.rpopOff) { AD.rpopOff(); AD.rpopOff = null; } }
+/* Liste déroulante d'une cellule : rappel des notes, choix de la note finale et commentaire. */
+function rpop(anchor, build) {
+  closeRpop();
+  const p = el('div', {class: 'rpop', role: 'dialog', 'aria-label': 'Choisir la note'});
+  build(p, closeRpop); document.body.append(p);
+  const r = anchor.getBoundingClientRect(), w = Math.min(460, window.innerWidth - 24), left = Math.max(12, Math.min(window.innerWidth - w - 12, r.left));
+  // Sous la cellule si la place suffit ; sinon remontée pour rester entièrement visible.
+  p.style.width = w + 'px'; p.style.left = left + window.scrollX + 'px'; p.style.maxHeight = (window.innerHeight - 24) + 'px';
+  p.style.top = Math.max(12, Math.min(r.bottom + 6, window.innerHeight - p.offsetHeight - 12)) + window.scrollY + 'px';
+  const out = e => { if (!p.contains(e.target) && !anchor.contains(e.target)) closeRpop(); }, esc = e => { if (e.key === 'Escape') { closeRpop(); anchor.focus(); } };
+  document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', esc, true);
+  AD.rpopOff = () => { document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', esc, true); };
+  const f = p.querySelector('input,textarea,button'); if (f) f.focus();
+}
+function gradeChoice(name, current, noneLabel) {
+  const box = el('div', {class: 'rchoice', role: 'radiogroup', 'aria-label': 'Note'});
+  [...GRADES, ['', noneLabel]].forEach(([k, full]) => box.append(el('label', {class: 'ropt'}, el('input', {type: 'radio', name, value: k, checked: (current || '') === k}), el('span', null, full))));
+  return {box, value: () => { const x = box.querySelector('input:checked'); return x ? x.value : ''; }};
+}
+function paintResults(body) {
+  const st = AD.st; closeRpop(); body.textContent = '';
+  if (!AD.res || Date.now() - AD.res.at > 60000) {
+    if (!AD.res) body.append(el('p', {class: 'muted'}, 'Chargement des résultats…'));
+    loadResults().then(() => { if (AD.tab === 'resultat') paintResults(body); }).catch(e => toast(e.message, 'err'));
+    if (!AD.res) return;
+  }
+  const R = AD.res, courses = st.courses, act = st.students.filter(u => u.active).sort((a, b) => (a.nom + a.prenom).localeCompare(b.nom + b.prenom));
+  const U = new Map(st.students.map(u => [u.id, u])), fin = sid => R.finals.find(x => x.student === sid) || {grade: null, comment: ''};
+  const reload = async () => { await loadResults(); paintResults(body); };
+  const pill = (grade, proposed, title) => el('span', {class: 'gr gr-' + (grade || 'none') + (proposed ? ' prop' : ''), title: title || ''}, grade || '—');
+  // 1. Répartition
+  const view = R.view, vsel = el('select', {'aria-label': 'Note représentée', id: 'res-view', onchange: () => { R.view = vsel.value; paintResults(body); }},
+    el('option', {value: 'final', selected: view === 'final'}, 'Note définitive'), courses.map(c => el('option', {value: c.id, selected: view === c.id}, c.title)));
+  const counts = {}; ['NOK', 'AB', 'B', 'TB', ''].forEach(k => counts[k] = {ok: 0, prop: 0});
+  act.forEach(u => { if (view === 'final') counts[fin(u.id).grade || ''].ok++; else { const x = resultCell(view, u.id); if (x.chosen) counts[x.chosen].ok++; else if (x.grade) counts[x.grade].prop++; else counts[''].ok++; } });
+  const max = Math.max(1, ...Object.values(counts).map(c => c.ok + c.prop));
+  const chart = el('div', {class: 'rchart', role: 'img', 'aria-label': 'Répartition des notes : ' + ['NOK', 'AB', 'B', 'TB'].map(k => k + ' ' + (counts[k].ok + counts[k].prop)).join(', ') + ', non noté ' + counts[''].ok});
+  [...GRADES, ['', 'Non noté']].forEach(([k, full]) => { const c = counts[k], n = c.ok + c.prop;
+    chart.append(el('div', {class: 'rbar' + (k ? '' : ' none'), title: full + ' : ' + n + (c.prop ? ' (dont ' + c.prop + ' proposée' + (c.prop > 1 ? 's' : '') + ')' : '')}, el('span', {class: 'rbar-n'}, String(n)),
+      el('div', {class: 'rbar-col'}, c.prop ? el('i', {class: 'prop', style: 'height:' + (100 * c.prop / max) + '%'}) : null, c.ok ? el('i', {style: 'height:' + (100 * c.ok / max) + '%'}) : null), el('span', {class: 'rbar-l'}, k || 'Non noté'))); });
+  body.append(el('div', {class: 'sub first'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Répartition des notes'), el('div', {style: 'min-width:240px'}, vsel)), chart,
+    el('p', {class: 'small muted'}, view === 'final' ? 'Notes définitives choisies à la main, sur ' + act.length + ' étudiants.' : 'En bleu foncé : notes choisies. En bleu clair : notes proposées (moyenne des livrables notés, un livrable non rendu comptant 0 ; 0 = NOK, 1 ou 2 = AB, 3 ou 4 = B, 5 = TB).')));
+  // 2. Tableau
+  const head = el('tr', null, el('th', null, 'Étudiant'), courses.map(c => el('th', {title: c.title}, c.title)), el('th', null, 'Note définitive'), el('th', null, 'Commentaire final'));
+  const tb = el('tbody');
+  act.forEach(u => {
+    const tr = el('tr', {'data-sid': u.id}, el('td', null, el('div', {class: 'who-c'}, avatar(u), el('div', null, el('b', null, u.nom), ' ' + u.prenom))));
+    courses.forEach(c => {
+      const x = resultCell(c.id, u.id), mates = x.g ? x.g.members.map(id => U.get(id)).filter(Boolean) : [u];
+      const btn = el('button', {class: 'rcell', type: 'button', 'data-course': c.id, title: x.chosen ? GRADE_FULL[x.chosen] + (x.comment ? ' — ' + x.comment : '') : x.grade ? 'Note proposée : ' + GRADE_FULL[x.grade] + ' (moyenne ' + fmtNote(x.prop.avg) + ' / 5). Cliquez pour choisir.' : 'Aucun travail pour ce cours. Cliquez pour choisir une note.',
+        onclick: () => rpop(btn, (p, close) => {
+          const ch = gradeChoice('rg', x.chosen, x.prop.grade ? 'Pas de choix : garder la note proposée (' + x.prop.grade + ')' : 'Pas de note'), com = el('textarea', {'aria-label': 'Commentaire', placeholder: 'Commentaire pour ce cours', style: 'min-height:64px'}), err = el('p', {class: 'note err', hidden: true}); com.value = x.comment || '';
+          p.append(el('p', {class: 'eyebrow'}, c.title), el('h3', null, mates.map(m => m.prenom + ' ' + m.nom).join(', ')),
+            mates.length > 1 ? el('p', {class: 'small muted'}, 'La note et le commentaire valent pour tout le groupe de ce cours.') : null);
+          if (x.g) {
+            const list = el('div', {class: 'rlivs'}); let last = null;
+            x.livs.forEach(l => { const pr = x.prop.stats.per[l.it.id], sc = (x.g.scores || {})[l.it.id] || {}, pt = l.part ? 'Partie ' + (l.pi + 1) + ' · ' + l.part.title : 'Tout le cours';
+              if (pt !== last) { list.append(el('div', {class: 'rlivs-p'}, pt)); last = pt; }
+              list.append(el('div', {class: 'rliv'}, el('span', {class: 'grow'}, plain(l.it.label || l.it.id)),
+                !pr.done ? el('span', {class: 'muted'}, 'non rendu') : l.it.t === 'upload' ? el('span', {class: 'muted'}, 'fichier déposé') :
+                  [el('span', {class: sc.manual != null ? 'rn on' : 'rn', title: 'Note de l\'enseignant'}, 'Ens. ' + (sc.manual != null ? sc.manual : '—')), el('span', {class: sc.manual == null && sc.ia != null ? 'rn on' : 'rn', title: sc.note || 'Note de l\'IA'}, 'IA ' + (sc.ia != null ? sc.ia : '—')), el('span', {class: sc.manual == null && sc.ia == null ? 'rn on' : 'rn', title: 'Calcul automatique (volume et complétude)'}, 'Auto ' + (pr.auto != null ? pr.auto : '—'))])); });
+            p.append(el('p', {class: 'small muted'}, 'Notes par livrable, sur 5 (en gras : celle qui compte). Moyenne : ' + fmtNote(x.prop.avg) + ' / 5, soit ' + (x.prop.grade || '—') + '.'), list);
+          } else p.append(el('p', {class: 'small muted'}, 'Cet étudiant n\'a pas de projet pour ce cours.'));
+          p.append(el('p', {class: 'eyebrow'}, 'Note finale du cours'), ch.box, com, err, el('div', {class: 'row'}, el('button', {class: 'btn pri', type: 'button', onclick: async () => {
+            try { await aapi('cours_admin_result_set', {p_course: c.id, p_student: u.id, p_grade: ch.value() || null, p_comment: com.value}); close(); toast('Note enregistrée' + (mates.length > 1 ? ' pour ' + mates.length + ' étudiants.' : '.')); await reload(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Enregistrer'),
+            el('button', {class: 'btn', type: 'button', onclick: close}, 'Annuler')));
+        })}, pill(x.grade, !x.chosen && !!x.grade), x.comment ? el('span', {class: 'rcom', title: x.comment}, '💬') : null);
+      tr.append(el('td', null, btn));
+    });
+    const f = fin(u.id), openFinal = anchor => rpop(anchor, (p, close) => {
+      const ch = gradeChoice('rf', f.grade, 'Pas de note définitive'), com = el('textarea', {'aria-label': 'Commentaire final', placeholder: 'Commentaire final, pour l\'ensemble des cours', style: 'min-height:90px'}), err = el('p', {class: 'note err', hidden: true}); com.value = f.comment || '';
+      p.append(el('p', {class: 'eyebrow'}, 'Note définitive · tous les cours'), el('h3', null, u.prenom + ' ' + u.nom),
+        el('div', {class: 'rlivs'}, courses.map(c => { const x = resultCell(c.id, u.id); return el('div', {class: 'rliv'}, el('span', {class: 'grow'}, c.title), pill(x.grade, !x.chosen && !!x.grade), x.comment ? el('span', {class: 'small muted'}, x.comment) : null); })),
+        ch.box, com, err, el('div', {class: 'row'}, el('button', {class: 'btn pri', type: 'button', onclick: async () => {
+          try { await aapi('cours_admin_final_set', {p_student: u.id, p_grade: ch.value() || null, p_comment: com.value}); close(); toast('Note définitive enregistrée.'); await reload(); } catch (e) { err.hidden = false; err.textContent = e.message; } }}, 'Enregistrer'),
+          el('button', {class: 'btn', type: 'button', onclick: close}, 'Annuler')));
+    });
+    const fb = el('button', {class: 'rcell final', type: 'button', title: f.grade ? GRADE_FULL[f.grade] : 'Choisir la note définitive', onclick: () => openFinal(fb)}, pill(f.grade, false));
+    const cb = el('button', {class: 'rcomment' + (f.comment ? '' : ' muted'), type: 'button', title: 'Modifier la note définitive et le commentaire final', onclick: () => openFinal(fb)}, f.comment || 'Ajouter un commentaire');
+    tr.append(el('td', null, fb), el('td', null, cb)); tb.append(tr);
+  });
+  body.append(el('div', {class: 'sub'}, el('div', {class: 'row'}, el('h2', {class: 'grow'}, 'Résultats par étudiant'),
+      el('button', {class: 'btn sm', type: 'button', onclick: () => {
+        const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', lines = [['Nom', 'Prénom', ...courses.flatMap(c => [c.title, 'Commentaire · ' + c.title]), 'Note définitive', 'Commentaire final'].map(q).join(';')];
+        act.forEach(u => { const f = fin(u.id); lines.push([u.nom, u.prenom, ...courses.flatMap(c => { const x = resultCell(c.id, u.id); return [x.chosen || (x.grade ? x.grade + ' (proposée)' : ''), x.comment]; }), f.grade || '', f.comment].map(q).join(';')); });
+        saveBlob(new Blob(['﻿' + lines.join('\r\n')], {type: 'text/csv;charset=utf-8'}), 'resultats.csv');
+      }}, 'Exporter (CSV)')),
+    el('p', {class: 'small muted'}, 'Une note par cours et par étudiant ; les membres d\'un même groupe partagent la note et le commentaire du cours. Une note grisée en italique est proposée et non encore choisie. ' + GRADES.map(g => g[1]).join(' · ') + '.'),
+    el('div', {class: 'tablewrap'}, el('table', {class: 'fill promo results'}, el('thead', null, head), tb))));
 }
 
 /* ---------- Aiguillage : espace étudiant, backoffice ou aperçu d'un cours ---------- */
