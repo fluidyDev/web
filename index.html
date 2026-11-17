@@ -362,7 +362,7 @@ table.promo .pill{margin:1px 0}
 .yq.journal{flex:1;min-height:300px} .yq.journal .ql-container{flex:1;min-height:0;overflow:auto} .yq.journal .ql-editor{min-height:240px}
 .screen:not(.top) .yq .ql-editor{min-height:150px}
 /* Galerie de photos */
-.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
 .gal-i{appearance:none;border:0;padding:0;cursor:zoom-in;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:var(--wash);box-shadow:inset 0 0 0 1px var(--line)}
 .gal-i img{width:100%;height:100%;object-fit:cover;display:block} .gal-i img:not([src]){visibility:hidden} .gal-i.ko{display:none}
 
@@ -1268,7 +1268,7 @@ function rtIn(p) {
   const e = p && YD.get(p.i); if (!e) return;
   try { if (p.u) Collab.Y.applyUpdate(e.doc, unb64(p.u), 'rt'); if (p.a) Collab.applyAwarenessUpdate(e.aw, unb64(p.a), 'rt'); } catch (x) {}
 }
-function queueOut() { if (!outT) outT = setTimeout(flushOut, 200); }
+function queueOut() { if (!outT) outT = setTimeout(flushOut, 350); }
 function flushOut() {
   outT = null;
   for (const e of YD.values()) {
@@ -1296,9 +1296,11 @@ function resPane() {
   const res = p.items.filter(it => it.t === 'res'), files = (S.course.resources || []).filter(f => !f.part || f.part === p.id);
   const imgs = files.filter(f => /^image\//.test(f.mime || '')), docs = files.filter(f => !/^image\//.test(f.mime || ''));
   if (!res.length && !files.length) body.append(el('p', {class: 'muted small'}, 'Pas de ressource pour cette partie.'));
-  res.forEach(r => body.append(el('div', {class: 'res'}, r.title ? el('h3', null, r.title) : null, el('div', {class: 'res-body stmt', html: stmt(r.html)}))));
   const ticket = f => api('cours_file_ticket', {p_token: S.tok, p_file: f.id});
+  const later = () => {
   docs.forEach(f => body.append(el('div', {class: 'res'}, el('div', {class: 'row'}, el('b', {class: 'grow', style: 'overflow-wrap:anywhere'}, f.name), el('button', {class: 'btn sm', onclick: () => download(f)}, 'Télécharger')), el('span', {class: 'small muted'}, fmtSize(f.size)))));
+  res.forEach(r => body.append(el('div', {class: 'res'}, r.title ? el('h3', null, r.title) : null, el('div', {class: 'res-body stmt', html: stmt(r.html)}))));
+  };
   if (imgs.length) {
     const grid = el('div', {class: 'gal'});
     const zoom = i => modal((b, close) => {
@@ -1313,8 +1315,9 @@ function resPane() {
       const im = el('img', {alt: f.name}), cell = el('button', {class: 'gal-i', type: 'button', title: f.name, onclick: () => zoom(i)}, im);
       grid.append(cell); loadQ(() => blobUrl(f, ticket).then(u => { im.src = u; }).catch(() => { cell.classList.add('ko'); }));
     });
-    body.append(el('div', {class: 'res'}, el('h3', null, 'Photos (' + imgs.length + ')'), el('p', {class: 'small muted'}, 'Cliquez sur une photo pour l\'agrandir.'), grid));
+    body.append(el('div', {class: 'res'}, el('h3', null, 'Photos du produit (' + imgs.length + ')'), el('p', {class: 'small muted'}, 'Cliquez sur une photo pour l\'agrandir.'), grid));
   }
+  later();
   return pane;
 }
 window.addEventListener('resize', (() => { let t, w = window.innerWidth; return () => { clearTimeout(t); t = setTimeout(() => { if ((w < 900) !== (window.innerWidth < 900) && S.view === 'main' && !document.activeElement.closest('[data-item]')) render(); w = window.innerWidth; }, 200); }; })());
@@ -1438,7 +1441,7 @@ function paintPromo(body) {
   const keepScroll = window.scrollY; body.textContent = '';
   const act = st.students.filter(u => u.active);
   const count = k => act.filter(u => aStatus(u, G.get(u.group_id))[0] === k).length;
-  const waiting = c && c.session_active ? st.groups.filter(g => c.pace_part > g.ack_part).length : 0;
+  const waiting = c && c.session_active ? st.groups.filter(g => c.pace_part > g.ack_part && act.some(u => u.group_id === g.id)).length : 0;
   const multi = st.groups.filter(g => act.filter(u => u.group_id === g.id).length > 1).length;
   body.append(el('div', {class: 'kpis'}, [[act.filter(u => u.online).length + ' / ' + act.length, 'en ligne maintenant'], [count('Jamais connecté'), 'jamais connectés'], [count('Login en cours'), 'login en cours'], [count('Connecté'), 'connectés, pas commencé'], [count('Exercice en cours'), 'exercice en cours'], [count('Exercice terminé'), 'exercice terminé'], [multi, 'projets à plusieurs'], [waiting, 'projets en retard sur le rythme']].map(([v, l]) => el('div', {class: 'kpi'}, el('b', null, String(v)), el('span', {class: 'small muted'}, l)))));
   const search = el('input', {type: 'text', placeholder: 'Filtrer par nom', value: AD.filter, 'aria-label': 'Filtrer par nom', style: 'max-width:260px', oninput: () => { AD.filter = search.value; rows(); }});
