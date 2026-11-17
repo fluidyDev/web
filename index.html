@@ -400,6 +400,18 @@ table.fill.matrix th.act.add{width:auto;padding:6px 8px;vertical-align:middle}
 .prodform{display:flex;flex-direction:column;gap:14px;padding:16px 18px!important}
 .prodform label.f{font-size:13px;color:var(--brand);font-weight:600}
 .prodform textarea{min-height:92px;font-size:14px;font-weight:400;resize:vertical}
+/* Colonnes d'action (poignée, suppression) : largeur au plus juste ; tableau comparatif sur toute la largeur disponible */
+table.fill th.act,table.fill td.act{min-width:0;width:30px;padding:6px 2px;text-align:center}
+table.fill th.act:first-child,table.fill td.act:first-child{min-width:0;width:26px;padding:6px 0 6px 2px}
+table.fill td.act .grip{width:22px}
+.screen:has(table.matrix){max-width:none}
+.screen:has(table.matrix)~.est,.est:has(~.screen table.matrix){max-width:none}
+table.fill.matrix{width:100%}
+table.fill.matrix th.prod{min-width:150px}
+table.fill.matrix td{min-width:150px}
+table.fill.matrix td.act{min-width:0}
+table.fill.matrix th.crit{width:190px}
+.center-scroll:has(table.matrix){padding-left:20px;padding-right:20px}
 
 </style>
 </head>
