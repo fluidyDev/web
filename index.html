@@ -384,6 +384,23 @@ table.fill.matrix td{min-width:150px}
 table.fill tfoot td.tl{text-align:right}
 .grip[hidden]{display:none!important}
 
+/* Tableaux : affichage sur une ligne, colonnes de produits, lien, vue d'un produit en grand */
+.qhead .btn.sm{flex:none}
+table.fill.oneline textarea{height:34px!important;white-space:nowrap;overflow:hidden}
+table.fill.oneline tr.inh-row td.fx,table.fill.oneline th.crit{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+table.fill.matrix th.prod{white-space:nowrap;min-width:170px}
+table.fill.matrix th.prod span{margin-right:4px;vertical-align:middle}
+table.fill.matrix th.prod .btn.x{width:24px;min-height:24px;font-size:13px;vertical-align:middle}
+table.fill.matrix th.act.add{width:auto;padding:6px 8px;vertical-align:middle}
+.linkcell{display:flex;align-items:center;gap:6px;min-height:34px}
+.linkcell a{font-weight:600}
+.linkcell input{padding:6px 8px;font-size:13px;box-shadow:inset 0 0 0 1px var(--line)}
+.linkcell .btn.x{width:24px;min-height:24px;font-size:12px}
+.linkcell.held input{box-shadow:inset 0 0 0 2px rgba(232,116,42,.6)!important;background:#fffaf5}
+.prodform{display:flex;flex-direction:column;gap:14px;padding:16px 18px!important}
+.prodform label.f{font-size:13px;color:var(--brand);font-weight:600}
+.prodform textarea{min-height:92px;font-size:14px;font-weight:400;resize:vertical}
+
 </style>
 </head>
 <body>
@@ -609,7 +626,7 @@ function makeRich(html, onChange, opts) {
   ed.addEventListener('input', () => onChange(sanitize(ed.innerHTML)));
   return [tb, ed];
 }
-function autoGrow(t) { t.style.height = 'auto'; t.style.height = Math.max(34, t.scrollHeight + 2) + 'px'; }
+function autoGrow(t) { if (t.closest('table.oneline')) { t.style.height = ''; return; } t.style.height = 'auto'; t.style.height = Math.max(t.classList.contains('roomy') ? 92 : 34, t.scrollHeight + 2) + 'px'; }
 
 /* ---------- Contenu d'un cours : parties, écrans ---------- */
 const ANSWERABLE = ['q', 'table', 'upload'];
@@ -635,6 +652,22 @@ function tableRows(get, keys, id) {
   return rows.sort((a, b) => a.o - b.o || (a.rid < b.rid ? -1 : 1));
 }
 const rid = () => Math.random().toString(36).slice(2, 8);
+
+/* Tableau comparatif : colonnes (produits) et lignes (critères), dans l'ordre choisi par le groupe. */
+function matrixCols(get, keys, it) {
+  const M = it.matrix, base = Array.from({length: M.cols || 6}, (_, j) => ({id: 'c' + (j + 1), o: j, base: true})), pre = it.id + '/_c/', extra = [];
+  for (const k of keys) { if (!k.startsWith(pre)) continue; const m = get(k); if (m && !m.d) extra.push({id: k.slice(pre.length), o: m.o || 0}); }
+  extra.sort((a, b) => a.o - b.o || (a.id < b.id ? -1 : 1));
+  return base.concat(extra).map((c, i) => ({...c, label: (M.colLabel || 'Produit') + ' ' + (i + 1)}));
+}
+function matrixRows(get, keys, it) {
+  const fixed = it.matrix.rows || [], fk = new Set(fixed.map(r => r.k));
+  const f = fixed.map((r, i) => { const m = get(it.id + '/' + r.k + '/_'); return {rid: r.k, o: m && m.o != null ? m.o : (i + 1) * 1000, fixed: true, def: r}; });
+  const custom = tableRows(get, keys, it.id).filter(r => !fk.has(r.rid) && r.rid !== '_c');
+  return f.concat(custom).sort((a, b) => a.o - b.o || (a.rid < b.rid ? -1 : 1));
+}
+const linkNorm = v => { v = String(v || '').trim(); if (/^www\./i.test(v)) v = 'https://' + v; return v; };
+const isUrl = v => /^https?:\/\/[^\s<>"']+$/i.test(v);
 
 /* ============ Vue étudiant ============ */
 const S = {tok: LS.get('tok', null), me: null, boot: null, course: null, sy: null, A: new Map(), dirty: new Map(), sending: null,
@@ -988,13 +1021,40 @@ function qField(it, ro) {
 }
 function cellInput(k, ro, attrs, onInput) {
   const inp = attrs.select ? el('select', {disabled: ro, 'aria-label': attrs.label}, el('option', {value: ''}, '—'), attrs.select.map(o => el('option', {value: o}, o)))
-    : el('textarea', {rows: 1, readonly: ro, 'aria-label': attrs.label, placeholder: attrs.ph || null, inputmode: attrs.num ? 'decimal' : null, class: attrs.num ? 'n' : null});
+    : el('textarea', {rows: 1, readonly: ro, 'aria-label': attrs.label, placeholder: attrs.ph || null, inputmode: attrs.num ? 'decimal' : null, class: [attrs.num ? 'n' : '', attrs.cls || ''].join(' ').trim() || null});
   inp.value = ansOf(k) || ''; inp.dataset.item = k;
   const on = () => { onInput(inp.value); if (inp.tagName === 'TEXTAREA') autoGrow(inp); };
   inp.addEventListener('input', on); if (inp.tagName === 'SELECT') inp.addEventListener('change', on);
   FIELDS.set(k, {set(x) { if (document.activeElement !== inp && inp.value !== (x || '')) { inp.value = x || ''; if (inp.tagName === 'TEXTAREA') autoGrow(inp); } },
     lock(n) { inp.classList.toggle('held', !!n); inp.title = n ? n + ' écrit ici' : ''; if (document.activeElement !== inp) { if (inp.tagName === 'SELECT') inp.disabled = ro || !!n; else inp.readOnly = ro || !!n; } }});
   return inp;
+}
+/* Bascule d'affichage d'un tableau : multiligne (la hauteur suit le texte) ou une ligne (texte rogné). Réglage propre à chaque poste. */
+function lineToggle(it, tbl) {
+  let one = LS.get('ol:' + it.id, '0') === '1';
+  const b = el('button', {class: 'btn sm', type: 'button', onclick: () => { one = !one; LS.set('ol:' + it.id, one ? 1 : 0); paint(); }});
+  function paint() { tbl.classList.toggle('oneline', one); b.textContent = one ? 'Affichage : une ligne' : 'Affichage : multiligne'; b.title = one ? 'Passer en multiligne : la hauteur des cellules suit le texte' : 'Passer sur une ligne : le texte est rogné'; b.setAttribute('aria-pressed', String(one)); requestAnimationFrame(() => tbl.querySelectorAll('textarea').forEach(autoGrow)); }
+  paint(); return b;
+}
+/* Cellule « lien » : une adresse web saisie devient un lien cliquable « lien » ; la croix le retire pour en saisir un autre. */
+function linkCell(k, ro, label) {
+  const box = el('div', {class: 'linkcell', 'data-item': k}); let editing = false;
+  function paint() {
+    const v = ansOf(k) || ''; box.textContent = '';
+    if (!editing && isUrl(linkNorm(v))) {
+      box.append(el('a', {href: linkNorm(v), target: '_blank', rel: 'noopener noreferrer', title: linkNorm(v)}, 'lien'),
+        ro ? null : el('button', {class: 'btn x', type: 'button', title: 'Supprimer ce lien pour en saisir un autre', 'aria-label': 'Supprimer ce lien', onclick: () => { setAns(k, ''); paint(); const i = box.querySelector('input'); if (i) i.focus(); }}, '✕'));
+    } else {
+      const inp = el('input', {type: 'text', inputmode: 'url', value: v, readonly: ro, placeholder: ro ? '' : 'Collez le lien (https://…)', 'aria-label': label});
+      inp.addEventListener('focus', () => { editing = true; });
+      inp.addEventListener('input', () => setAns(k, inp.value.trim()));
+      inp.addEventListener('blur', () => { editing = false; const n = linkNorm(inp.value); if (n !== (ansOf(k) || '')) setAns(k, n); paint(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+      box.append(inp);
+    }
+  }
+  FIELDS.set(k, {set() { if (!editing) paint(); }, lock(n) { box.classList.toggle('held', !!n); const i = box.querySelector('input'); if (i && document.activeElement !== i) i.readOnly = ro || !!n; }});
+  paint(); return box;
 }
 function tableField(it, ro) {
   if (it.matrix) return matrixField(it, ro);
@@ -1003,7 +1063,9 @@ function tableField(it, ro) {
   const key = (r, k) => it.id + '/' + r + '/' + k, skey = (r, k) => it.from + '/' + r + '/' + k;
   const hasSum = it.cols.some(c => c.sum), isN = c => c.kind === 'num' || c.kind === 'mul';
   const valOf = (kf, r, c) => c.kind === 'mul' ? num(ansOf(kf(r, c.of[0]))) * num(ansOf(kf(r, c.of[1]))) : num(ansOf(kf(r, c.k)));
-  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill'}, el('thead', null, el('tr', null, ro ? null : el('th', {class: 'act'}), it.cols.map(c => el('th', {class: (isN(c) ? 'n' : '') + (c.wide ? ' wide' : '')}, c.label)), ro ? null : el('th', {class: 'act'}))), inh, body, hasSum ? foot : null)));
+  const tbl = el('table', {class: 'fill'}, el('thead', null, el('tr', null, ro ? null : el('th', {class: 'act'}), it.cols.map(c => el('th', {class: (isN(c) ? 'n' : '') + (c.wide ? ' wide' : '')}, c.label)), ro ? null : el('th', {class: 'act'}))), inh, body, hasSum ? foot : null);
+  box.querySelector('.qhead').append(lineToggle(it, tbl));
+  box.append(el('div', {class: 'tbl-wrap'}, tbl));
   const empty = el('p', {class: 'muted small', hidden: true}, 'Aucune ligne.'); box.append(empty);
   function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); const g = trs.get(r) && trs.get(r).querySelector('.grip'); if (g) g.hidden = false; } } }
   function calc(r) { const tr = trs.get(r); if (!tr) return; it.cols.filter(c => c.kind === 'mul').forEach(c => { const a = ansOf(key(r, c.of[0])), b = ansOf(key(r, c.of[1])); tr.querySelector('[data-calc="' + c.k + '"]').textContent = filled(a) && filled(b) ? fmtNum(num(a) * num(b)) : ''; }); }
@@ -1070,31 +1132,71 @@ function tableField(it, ro) {
   TABLES.push({id: it.id, refresh});
   return box;
 }
-/* Tableau comparatif : une colonne par produit, une ligne par critère (critères fournis, plus ceux que le groupe ajoute). */
+/* Tableau comparatif : une colonne par produit, une ligne par critère. Colonnes et critères ajoutables, lignes réordonnables,
+   et vue d'un seul produit en grand dans une fenêtre. */
 function matrixField(it, ro) {
-  const M = it.matrix, n = M.cols || 6, body = el('tbody'), extra = el('tbody'), trs = new Map(); let ghost = null;
-  const key = (r, k) => it.id + '/' + r + '/' + k, cols = Array.from({length: n}, (_, j) => 'c' + (j + 1));
-  const box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)})));
-  box.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'fill matrix'}, el('thead', null, el('tr', null, el('th', {class: 'crit'}, 'Critère'), cols.map((c, j) => el('th', null, (M.colLabel || 'Produit') + ' ' + (j + 1))), ro ? null : el('th', {class: 'act'}))), body, extra)));
-  (M.rows || []).forEach(row => body.append(el('tr', null, el('th', {class: 'crit', scope: 'row'}, row.label), cols.map((c, j) => el('td', null, cellInput(key(row.k, c), ro, {label: row.label + ', ' + (M.colLabel || 'Produit') + ' ' + (j + 1)}, v => setAns(key(row.k, c), v)))), ro ? null : el('td', {class: 'act'}))));
-  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; addGhost(); } } }
-  function addTr(r) {
-    const tr = el('tr'); trs.set(r, tr);
-    tr.append(el('th', {class: 'crit', scope: 'row'}, cellInput(key(r, 'label'), ro, {label: 'Nouveau critère', ph: 'Nouveau critère'}, v => { ensure(r); setAns(key(r, 'label'), v); })));
-    cols.forEach((c, j) => tr.append(el('td', null, cellInput(key(r, c), ro, {label: 'Critère ajouté, ' + (M.colLabel || 'Produit') + ' ' + (j + 1)}, v => { ensure(r); setAns(key(r, c), v); }))));
-    if (!ro) tr.append(el('td', {class: 'act'}, el('button', {class: 'btn x', type: 'button', title: 'Supprimer ce critère', 'aria-label': 'Supprimer ce critère', onclick: () => { if (r === ghost) return; const m = ansOf(key(r, '_')) || {o: Date.now()}; setAns(key(r, '_'), {o: m.o, d: true}); refresh(); }}, '✕')));
-    extra.append(tr); requestAnimationFrame(() => tr.querySelectorAll('textarea').forEach(autoGrow));
+  const M = it.matrix, key = (r, k) => it.id + '/' + r + '/' + k, ckey = c => it.id + '/_c/' + c;
+  const head = el('thead'), body = el('tbody'), tbl = el('table', {class: 'fill matrix'}, head, body);
+  const box = el('div', {class: 'qblock'}, el('div', {class: 'qhead'}, el('div', {class: 'qlabel', html: stmt(it.label)}), lineToggle(it, tbl)), el('div', {class: 'tbl-wrap'}, tbl));
+  let ghost = null, dragRid = null, sig = '';
+  const colsNow = () => matrixCols(ansOf, S.A.keys(), it), rowsNow = () => matrixRows(ansOf, S.A.keys(), it);
+  const sigOf = (cols, rows) => cols.map(c => c.id).join(',') + '|' + rows.map(r => r.rid).join(',');
+  const cellFor = (row, c, opts) => row.fixed && row.def.kind === 'link' ? linkCell(key(row.rid, c.id), ro, row.def.label + ', ' + c.label)
+    : cellInput(key(row.rid, c.id), ro, {label: (row.fixed ? row.def.label : 'Critère ajouté') + ', ' + c.label, cls: opts && opts.cls}, v => { if (!row.fixed) ensure(row.rid); setAns(key(row.rid, c.id), v); });
+  function ensure(r) { if (!ansOf(key(r, '_'))) { setAns(key(r, '_'), {o: Date.now()}); if (r === ghost) { ghost = null; const tr = body.querySelector('tr[data-rid="' + r + '"]'); if (tr) { const g = tr.querySelector('.grip'); if (g) g.hidden = false; } addGhost(colsNow()); sig = sigOf(colsNow(), rowsNow()); } } }
+  function drop(target, after) {
+    const rows = rowsNow().filter(r => r.rid !== dragRid), i = rows.findIndex(r => r.rid === target); if (i < 0 || !dragRid) return;
+    const pos = after ? i + 1 : i, prev = rows[pos - 1], next = rows[pos];
+    const o = prev && next ? (prev.o + next.o) / 2 : prev ? prev.o + 1000 : next ? next.o - 1000 : Date.now();
+    setAns(key(dragRid, '_'), {...(ansOf(key(dragRid, '_')) || {}), o}); build();
   }
-  function addGhost() { if (ro) return; ghost = rid(); addTr(ghost); }
-  function refresh() {
-    const rows = tableRows(ansOf, S.A.keys(), it.id), ids = new Set(rows.map(r => r.rid));
-    for (const [r, tr] of trs) if (!ids.has(r) && r !== ghost && !tr.contains(document.activeElement)) { tr.remove(); trs.delete(r); ['label', ...cols].forEach(c => FIELDS.delete(key(r, c))); }
-    for (const r of rows) if (!trs.has(r.rid)) addTr(r.rid);
-    if (ghost && trs.get(ghost) && extra.lastChild !== trs.get(ghost)) extra.append(trs.get(ghost));
+  function rowEl(row, cols, isGhost) {
+    const r = row.rid, tr = el('tr', {'data-rid': r});
+    if (!ro) {
+      const grip = el('span', {class: 'grip', draggable: 'true', title: 'Glisser pour déplacer la ligne', 'aria-label': 'Déplacer la ligne', hidden: isGhost}, '⠿');
+      grip.addEventListener('dragstart', e => { dragRid = r; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', r); e.dataTransfer.setDragImage(tr, 12, 12); } catch (x) {} });
+      grip.addEventListener('dragend', () => { dragRid = null; body.querySelectorAll('tr').forEach(t => t.classList.remove('dragging', 'drop-before', 'drop-after')); });
+      tr.addEventListener('dragover', e => { if (!dragRid || r === ghost || r === dragRid) return; e.preventDefault(); const b = tr.getBoundingClientRect(), after = e.clientY > b.top + b.height / 2; tr.classList.toggle('drop-after', after); tr.classList.toggle('drop-before', !after); });
+      tr.addEventListener('dragleave', () => tr.classList.remove('drop-before', 'drop-after'));
+      tr.addEventListener('drop', e => { if (!dragRid || r === ghost || r === dragRid) return; e.preventDefault(); const b = tr.getBoundingClientRect(); drop(r, e.clientY > b.top + b.height / 2); });
+      tr.append(el('td', {class: 'act'}, grip));
+    }
+    tr.append(el('th', {class: 'crit', scope: 'row'}, row.fixed ? row.def.label : cellInput(key(r, 'label'), ro, {label: 'Nouveau critère', ph: 'Nouveau critère'}, v => { ensure(r); setAns(key(r, 'label'), v); })));
+    cols.forEach(c => tr.append(el('td', null, cellFor(row, c))));
+    if (!ro) tr.append(el('td', {class: 'act'}, row.fixed ? null : el('button', {class: 'btn x', type: 'button', title: 'Supprimer ce critère', 'aria-label': 'Supprimer ce critère', onclick: () => { if (r === ghost) return; const m = ansOf(key(r, '_')) || {o: Date.now()}; setAns(key(r, '_'), {o: m.o, d: true}); build(); }}, '✕')));
+    return tr;
   }
-  refresh(); addGhost();
-  requestAnimationFrame(() => body.querySelectorAll('textarea').forEach(autoGrow));
-  if (!ro) box.append(el('p', {class: 'muted small'}, 'Une colonne par produit. Pour ajouter un critère de comparaison, écrivez son nom dans la dernière ligne.'));
+  function addGhost(cols) { if (ro || M.addRows === false) return; ghost = rid(); const tr = rowEl({rid: ghost}, cols, true); body.append(tr); }
+  function build() {
+    const cols = colsNow(), rows = rowsNow(); sig = sigOf(cols, rows);
+    for (const k of [...FIELDS.keys()]) if (k.startsWith(it.id + '/')) FIELDS.delete(k);
+    head.textContent = ''; body.textContent = ''; ghost = null;
+    head.append(el('tr', null, ro ? null : el('th', {class: 'act'}), el('th', {class: 'crit'}, 'Critère'),
+      cols.map(c => el('th', {class: 'prod'}, el('span', null, c.label),
+        el('button', {class: 'btn x', type: 'button', title: 'Ouvrir ' + c.label + ' en grand', 'aria-label': 'Ouvrir ' + c.label + ' en grand', onclick: () => openProduct(c.id)}, '⤢'),
+        !ro && !c.base ? el('button', {class: 'btn x', type: 'button', title: 'Supprimer ' + c.label, 'aria-label': 'Supprimer ' + c.label, onclick: () => confirmBox('Supprimer ' + c.label + ' ?', 'La colonne et son contenu disparaissent du tableau comparatif. Le contenu reste dans l\'historique.', 'Supprimer', async () => { setAns(ckey(c.id), {...(ansOf(ckey(c.id)) || {}), d: true}); build(); }, true)}, '✕') : null)),
+      !ro && M.addCols !== false ? el('th', {class: 'act add'}, el('button', {class: 'btn sm', type: 'button', title: 'Ajouter un produit au tableau', onclick: () => { setAns(ckey('x' + rid()), {o: Date.now()}); build(); requestAnimationFrame(() => { const w = tbl.parentElement; w.scrollLeft = w.scrollWidth; }); }}, '+ Produit')) : (ro ? null : el('th', {class: 'act'}))));
+    rows.forEach(r => body.append(rowEl(r, cols, false)));
+    addGhost(cols);
+    requestAnimationFrame(() => tbl.querySelectorAll('textarea').forEach(autoGrow)); paintPresence();
+  }
+  function refresh() { if (sigOf(colsNow(), rowsNow()) !== sig && !tbl.contains(document.activeElement)) build(); }
+  /* Un seul produit, en grand : une zone généreuse par critère. */
+  function openProduct(cid) {
+    const cols = colsNow(), c = cols.find(x => x.id === cid); if (!c) return;
+    modal((b, close) => {
+      const name = plain(ansOf(key('nom', cid)) || '');
+      b.append(el('div', {class: 'row'}, el('h2', {class: 'grow'}, c.label + (name ? ' · ' + name : '')), el('button', {class: 'btn pri', type: 'button', onclick: close}, 'Fermer')));
+      const list = el('div', {class: 'zoom-area prodform'}); b.append(list);
+      rowsNow().forEach(row => {
+        const lab = row.fixed ? row.def.label : (plain(ansOf(key(row.rid, 'label')) || '') || 'Critère sans nom');
+        list.append(el('label', {class: 'f'}, lab, cellFor(row, c, {cls: 'roomy'})));
+      });
+      requestAnimationFrame(() => list.querySelectorAll('textarea').forEach(autoGrow));
+    }, {wide: true, onclose: () => { flush(); build(); }});
+  }
+  build();
+  if (!ro) box.append(el('p', {class: 'muted small'}, 'Une colonne par produit : le bouton ⤢ ouvre un produit en grand, « + Produit » ajoute une colonne. Pour ajouter un critère, écrivez son nom dans la dernière ligne. Glissez la poignée ⠿ pour réordonner les lignes.'));
   TABLES.push({id: it.id, refresh});
   return box;
 }
@@ -1626,10 +1728,10 @@ function drawerPaint() {
       } else if (it.t === 'table') {
         const keys = [...A.keys()], rows = tableRows(get, keys, it.id), any = keys.some(k => k.startsWith(it.id + '/'));
         if (it.matrix) {
-          const cols = Array.from({length: it.matrix.cols || 6}, (_, j) => 'c' + (j + 1));
-          const line = (label, r) => el('tr', null, el('td', {style: 'font-weight:600'}, label), cols.map(cc => el('td', null, get(it.id + '/' + r + '/' + cc) || '')));
-          sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, el('th', null, 'Critère'), cols.map((cc, j) => el('th', null, (it.matrix.colLabel || 'Produit') + ' ' + (j + 1))))),
-            el('tbody', null, (it.matrix.rows || []).map(r => line(r.label, r.k)), rows.map(r => line((get(it.id + '/' + r.rid + '/label') || '(critère sans nom)') + ' (ajouté)', r.rid))))));
+          const cols = matrixCols(get, keys, it), mrows = matrixRows(get, keys, it);
+          const val = (r, cc) => { const v = get(it.id + '/' + r.rid + '/' + cc.id) || ''; return r.fixed && r.def.kind === 'link' && isUrl(linkNorm(v)) ? el('a', {href: linkNorm(v), target: '_blank', rel: 'noopener noreferrer', title: linkNorm(v)}, 'lien') : v; };
+          sec.append(el('div', {class: 'tbl-wrap'}, el('table', {class: 'data'}, el('thead', null, el('tr', null, el('th', null, 'Critère'), cols.map(cc => el('th', null, cc.label)))),
+            el('tbody', null, mrows.map(r => el('tr', null, el('td', {style: 'font-weight:600'}, r.fixed ? r.def.label : (get(it.id + '/' + r.rid + '/label') || '(critère sans nom)') + ' (ajouté)'), cols.map(cc => el('td', null, val(r, cc)))))))));
         } else {
           const src = it.from ? tableRows(get, keys, it.from) : [], tot = {};
           const cell = (base, r, cc, count) => { let v; if (cc.kind === 'mul') { const x = get(base + '/' + r + '/' + cc.of[0]), y = get(base + '/' + r + '/' + cc.of[1]); v = filled(x) && filled(y) ? num(x) * num(y) : null; } else v = get(base + '/' + r + '/' + cc.k) || ''; if (count && cc.sum) tot[cc.k] = (tot[cc.k] || 0) + (cc.kind === 'mul' ? (v || 0) : num(v)); return el('td', {class: cc.kind === 'num' || cc.kind === 'mul' ? 'n' : ''}, cc.kind === 'mul' ? (v == null ? '' : fmtNum(v)) : v); };
