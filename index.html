@@ -880,8 +880,11 @@ const linkNorm = v => { v = String(v || '').trim(); if (/^www\./i.test(v)) v = '
 const isUrl = v => /^https?:\/\/[^\s<>"']+$/i.test(v);
 
 /* ============ Version de la plateforme et journal des versions ============ */
-const VERSION = '2.2.0';
+const VERSION = '2.2.1';
 const CHANGELOG = [
+  {v: '2.2.1', date: '17/11/2026', title: 'Résultats dans les sauvegardes', items: [
+    'Les sauvegardes, les exports et les imports contiennent les notes finales du cours, les notes définitives et leurs commentaires. Restaurer une sauvegarde remet aussi ces notes dans l\'état de la sauvegarde ; une sauvegarde antérieure à cette version ne les modifie pas.',
+    'Tuiles de groupe du suivi : photos de 96 px pour que la note et la complétion tiennent sous une photo seule.']},
   {v: '2.2.0', date: '17/11/2026', title: 'Connexion par mail, messages aux étudiants, résultats', items: [
     'Connexion étudiante par code à 6 chiffres reçu par mail (à activer dans l\'onglet Codes) ; les codes imprimés restent valables en secours.',
     'Panneau latéral d\'un étudiant : bouton « Écrire » pour lui envoyer un e-mail depuis l\'adresse sans réponse, largeur réglable à la souris, affichage possible en fenêtre centrée.',
@@ -2085,7 +2088,7 @@ const ATABS = [['cours', 'Cours'], ['suivi', 'Suivi séance'], ['etudiants', 'É
 function adminRender() {
   const root = $('#app'); root.className = ''; root.textContent = '';
   if (!ATABS.some(t => t[0] === AD.tab)) AD.tab = 'cours';
-  const tabs = el('div', {class: 'tabs'}, ATABS.map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: async () => { AD.tab = k; AD.gsig = ''; if (k === 'suivi' && workStale(0)) { try { await loadWork(); } catch (e) {} } adminRender(); }}, l)));
+  const tabs = el('div', {class: 'tabs'}, ATABS.map(([k, l]) => el('button', {type: 'button', 'aria-pressed': String(AD.tab === k), onclick: async () => { AD.tab = k; AD.gsig = ''; if (k === 'resultat' && AD.res) AD.res.at = 0; if (k === 'suivi' && workStale(0)) { try { await loadWork(); } catch (e) {} } adminRender(); }}, l)));
   root.append(el('div', {class: 'adm'},
     el('header', {class: 'hdr'}, logoEl(), el('div', {class: 'hdr-title'}, el('p', {class: 'eyebrow'}, 'Backoffice · ' + (AD.st.admin || '')), el('b', {id: 'adm-title'})),
       el('div', {class: 'hdr-tools', id: 'adm-live'}), el('div', {class: 'hdr-tools'}, el('button', {class: 'btn sm', onclick: () => { api('cours_logout', {p_token: AD.tok}).catch(() => {}); adminLogin(); }}, 'Quitter'))),
@@ -2636,7 +2639,7 @@ async function exportZip(data, name, say) {
   }
   const manifest = {format: 'cours-fluidy-sauvegarde', v: 1, platform: VERSION, exported_at: new Date().toISOString(), course: {id: data.course_id, title: c ? c.title : ''}, missing_files: missing, data};
   files['sauvegarde.json'] = C.strToU8(JSON.stringify(manifest));
-  files['LISEZMOI.txt'] = C.strToU8('Sauvegarde de la plateforme de cours Fluidy (version ' + VERSION + ').\nCours : ' + (c ? c.title : data.course_id) + '\nExportée le ' + new Date().toLocaleString('fr-FR') + '\n\nsauvegarde.json : réponses, tableaux, textes, journaux, notes et historique des modifications.\nfichiers/ : fichiers déposés par les étudiants.\n\nPour la réimporter : backoffice, onglet Sauvegardes, « Importer un fichier de sauvegarde ».\n');
+  files['LISEZMOI.txt'] = C.strToU8('Sauvegarde de la plateforme de cours Fluidy (version ' + VERSION + ').\nCours : ' + (c ? c.title : data.course_id) + '\nExportée le ' + new Date().toLocaleString('fr-FR') + '\n\nsauvegarde.json : réponses, tableaux, textes, journaux, notes des livrables, résultats (notes finales, notes définitives, commentaires) et historique des modifications.\nfichiers/ : fichiers déposés par les étudiants.\n\nPour la réimporter : backoffice, onglet Sauvegardes, « Importer un fichier de sauvegarde ».\n');
   say('Assemblage de l\'archive…');
   saveBlob(new Blob([C.zipSync(files, {level: 0})], {type: 'application/zip'}), name);
   return {files: list.length - missing.length, missing};
@@ -2665,12 +2668,12 @@ function paintBackups(body) {
   const label = el('input', {type: 'text', maxlength: 120, placeholder: 'Nom de la sauvegarde (facultatif) : « Fin de séance », « Avant correction »…', 'aria-label': 'Nom de la sauvegarde', style: 'max-width:460px'});
   const list = el('div', {class: 'stack', style: 'gap:8px'});
   body.append(el('div', {class: 'sub'}, el('h3', null, 'Instantanés'), el('p', {class: 'small muted'}, 'Un instantané garde sur la plateforme la totalité des travaux du cours : projets, réponses, tableaux, textes, journaux, dépôts, notes, remarques et présences. Le restaurer remet tout le cours dans cet état.'),
-    el('div', {class: 'row'}, label, el('button', {class: 'btn pri', onclick: guard(async () => { say('Création de la sauvegarde…'); const r = await aapi('cours_admin_backup_create', {p_course: st.course_id, p_label: label.value}); say(''); toast('Sauvegarde créée : ' + r.stats.groups + ' projet(s), ' + r.stats.answers + ' réponse(s), ' + r.stats.files + ' fichier(s).'); await reload(); })}, 'Créer une sauvegarde maintenant')), list));
+    el('div', {class: 'row'}, label, el('button', {class: 'btn pri', onclick: guard(async () => { say('Création de la sauvegarde…'); const r = await aapi('cours_admin_backup_create', {p_course: st.course_id, p_label: label.value}); say(''); toast('Sauvegarde créée : ' + r.stats.groups + ' projet(s), ' + r.stats.answers + ' réponse(s), ' + r.stats.files + ' fichier(s), ' + (r.stats.grades || 0) + ' note(s).'); await reload(); })}, 'Créer une sauvegarde maintenant')), list));
   if (!AD.backups) { list.append(el('p', {class: 'muted'}, 'Chargement…')); reload().catch(e => toast(e.message, 'err')); }
   else if (!AD.backups.length) list.append(el('p', {class: 'muted small'}, 'Aucune sauvegarde pour ce cours.'));
   else AD.backups.forEach(b => list.append(el('div', {class: 'file bk'}, el('div', {class: 'grow'}, el('b', null, b.label), ' ', b.kind === 'auto' ? el('span', {class: 'pill'}, 'automatique') : null,
-      el('div', {class: 'small muted'}, fmtClock(b.at) + (b.by ? ' · ' + b.by : '') + ' · ' + b.stats.groups + ' projet(s) · ' + b.stats.answers + ' réponse(s) · ' + b.stats.files + ' fichier(s) · ' + fmtSize(b.stats.bytes))),
-    el('button', {class: 'btn sm', onclick: () => confirmBox('Restaurer « ' + b.label + ' » ?', 'Tout le cours revient à l\'état du ' + fmtClock(b.at) + ' : les réponses écrites depuis sont remplacées, les projets créés depuis sont vidés. Tous les étudiants sont déconnectés et devront se reconnecter. L\'état actuel est d\'abord mis de côté dans une sauvegarde automatique : la restauration peut être annulée.', 'Restaurer', async () => { const r = await aapi('cours_admin_backup_restore', {p_id: b.id}); AD.work = null; await adminPoll(false); toast(r.groups + ' projet(s) restauré(s).'); await reload(); }, true)}, 'Restaurer'),
+      el('div', {class: 'small muted'}, fmtClock(b.at) + (b.by ? ' · ' + b.by : '') + ' · ' + b.stats.groups + ' projet(s) · ' + b.stats.answers + ' réponse(s) · ' + b.stats.files + ' fichier(s) · ' + (b.stats.grades == null ? 'sans les notes' : b.stats.grades + ' note(s)') + ' · ' + fmtSize(b.stats.bytes))),
+    el('button', {class: 'btn sm', onclick: () => confirmBox('Restaurer « ' + b.label + ' » ?', 'Tout le cours revient à l\'état du ' + fmtClock(b.at) + ' : les réponses écrites depuis sont remplacées, les projets créés depuis sont vidés' + (b.stats.grades == null ? '. Cette sauvegarde date d\'avant la version 2.2.1 : les notes de l\'onglet Résultat ne sont pas touchées' : ', et les notes de l\'onglet Résultat (notes du cours et notes définitives) reviennent à cet état') + '. Tous les étudiants sont déconnectés et devront se reconnecter. L\'état actuel est d\'abord mis de côté dans une sauvegarde automatique : la restauration peut être annulée.', 'Restaurer', async () => { const r = await aapi('cours_admin_backup_restore', {p_id: b.id}); AD.work = null; await adminPoll(false); toast(r.groups + ' projet(s) restauré(s).'); await reload(); }, true)}, 'Restaurer'),
     el('button', {class: 'btn sm', onclick: guard(async () => { say('Préparation du fichier…'); const d = await aapi('cours_admin_backup_get', {p_id: b.id}); const r = await exportZip(d.data, 'sauvegarde-' + st.course_id + '-' + safeName(b.label) + '.zip', say); say(''); toast('Fichier téléchargé' + (r.missing.length ? ' · ' + r.missing.length + ' fichier(s) déposé(s) introuvable(s)' : '.')); })}, 'Télécharger'),
     el('button', {class: 'btn sm danger', onclick: () => confirmBox('Supprimer cette sauvegarde ?', '« ' + b.label + ' » du ' + fmtClock(b.at) + '. Le travail actuel des étudiants n\'est pas touché.', 'Supprimer', async () => { await ado('backup_delete', {course: st.course_id, backup: b.id}); await reload(); }, true)}, 'Supprimer'))));
   // Fichiers de sauvegarde
