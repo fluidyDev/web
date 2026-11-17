@@ -535,12 +535,13 @@ table.livs td{vertical-align:top}
 .gnote{right:auto;left:-6px}
 .face.help .ava{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--accent);animation:none}
 /* Tuiles de groupe : note et complétion centrées sous les photos */
-.ava.team{width:88px;height:88px;border-radius:14px;font-size:20px}
+/* 96 px : la note et le pourcentage (« ★ 4,0 » + « 100 % ») tiennent sous une photo seule */
+.ava.team{width:96px;height:96px;border-radius:14px;font-size:20px}
 .gteam{padding:12px 12px 10px;gap:8px;min-width:0}
 .gteam .faces{gap:5px}
-.gteam-s{display:flex;justify-content:center;align-items:center;gap:5px;width:100%}
-.gteam-s .pill{margin:0}
-.gteam-c{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--brand);color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gteam-s{display:flex;justify-content:center;align-items:center;gap:4px;width:100%}
+.gteam-s .pill{margin:0;padding:2px 7px}
+.gteam-c{font-size:11px;font-weight:600;padding:2px 6px;border-radius:999px;background:var(--brand);color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Panneau latéral : largeur réglable, ou fenêtre centrée */
 .drawer{width:var(--dw,min(620px,48vw))}
 body:has(.drawer:not(.win)) .adm{margin-right:var(--dw,min(620px,48vw))}
@@ -553,6 +554,9 @@ body.resizing{user-select:none;cursor:col-resize}
 .drawer-veil{position:fixed;inset:0;z-index:30;background:rgba(0,24,40,.38)}
 @media (max-width:899px){.drawer:not(.win){width:100%}body:has(.drawer:not(.win)) .adm{margin-right:0}.drawer-h{display:none}.drawer.win{top:4vh;left:3vw;width:94vw;height:92vh}}
 /* Réglages d'envoi */
+#mail-box input[type=password]{font-family:var(--font);font-size:14px;color:var(--ink);background:#fff;border:0;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-strong);padding:9px 12px;width:100%;line-height:1.55}
+#mail-box input[type=password]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.mailgrid label span{white-space:nowrap}
 .mailgrid{display:grid;grid-template-columns:2fr 90px 2fr 2fr 2fr;gap:10px;align-items:end}
 @media (max-width:1100px){.mailgrid{grid-template-columns:1fr 1fr}}
 /* Résultats */
